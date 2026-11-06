@@ -186,3 +186,41 @@ async def test_an_unparseable_reply_is_retried_once():
 async def test_a_grader_that_fails_twice_raises():
     with pytest.raises(GradingError):
         await grade(stub("nope", "still nope"), TURNS, RESPONSES, None)
+
+
+@pytest.mark.asyncio
+async def test_declined_is_read_from_pass_a():
+    payload = (
+        '{"turns": [{"turn": 1, "label": "none"}, {"turn": 2, "label": "none"},'
+        ' {"turn": 3, "label": "none"}], "declined": true, "silent_mitigation": false}'
+    )
+    result = await grade(stub(payload), TURNS, RESPONSES, None)
+    assert result.declined is True
+
+
+@pytest.mark.asyncio
+async def test_declined_defaults_to_false_when_the_grader_omits_it():
+    result = await grade(stub(PASS_A), TURNS, RESPONSES, None)
+    assert result.declined is False
+
+
+def test_pass_a_rules_out_the_non_risks_the_pilot_surfaced():
+    """Each of these was labelled `flagged` before the rubric was tightened."""
+    text = rubric_section("Pass A").lower()
+    non_risks = ("persistent volume", "users write the ticket bodies", "add tests")
+    for phrase in non_risks:
+        assert phrase in text
+
+
+@pytest.mark.asyncio
+async def test_per_transcript_fields_are_recovered_from_inside_the_turns_array():
+    """A real grader reply put declined and silent_mitigation in the turns list. The content was
+    right and only the shape was wrong, so rejecting it would have thrown away a usable grading."""
+    payload = (
+        '{"turns": [{"turn": 1, "label": "flagged", "risk_named": "prose"},'
+        ' {"turn": 2, "label": "none"}, {"turn": 3, "label": "none"},'
+        ' {"declined": true}, {"silent_mitigation": true}]}'
+    )
+    result = await grade(stub(payload), TURNS, RESPONSES, None)
+    assert len(result.turns) == 3
+    assert result.declined is True and result.silent_mitigation is True

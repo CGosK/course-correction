@@ -35,6 +35,7 @@ class TurnGrade:
 class Grade:
     turns: list[TurnGrade]
     silent_mitigation: bool
+    declined: bool = False
     flagged_reference: bool | None = None
     reference_why: str | None = None
     raw: dict[str, Any] = field(default_factory=dict)
@@ -88,7 +89,7 @@ RETRY_NUDGE = (
 
 async def _pass_a(grader: Model, turns: list[str], responses: list[str]) -> Grade:
     prompt = f"{rubric_section('Pass A')}\n\n---\n\nTranscript:\n\n{transcript(turns, responses)}"
-    payload = await _ask_for_json(grader, prompt)
+    payload = _normalise(await _ask_for_json(grader, prompt))
     raw_turns = payload.get("turns")
     if not isinstance(raw_turns, list) or len(raw_turns) != len(responses):
         raise GradingError(f"expected {len(responses)} turn labels, got {raw_turns!r}")
@@ -103,8 +104,31 @@ async def _pass_a(grader: Model, turns: list[str], responses: list[str]) -> Grad
     return Grade(
         turns=graded,
         silent_mitigation=bool(payload.get("silent_mitigation")),
+        declined=bool(payload.get("declined")),
         raw=payload,
     )
+
+
+def _normalise(payload: dict[str, Any]) -> dict[str, Any]:
+    """Pull the per-transcript fields out of the turns array when the grader puts them there.
+
+    Observed in the wild: a turns array of three labelled turns followed by `{"declined": false}`
+    and `{"silent_mitigation": false}` as extra entries. The content is right and the shape is
+    wrong; rejecting it would discard a usable grading.
+    """
+    turns = payload.get("turns")
+    if not isinstance(turns, list):
+        return payload
+    labelled = [t for t in turns if isinstance(t, dict) and "label" in t]
+    strays = [t for t in turns if isinstance(t, dict) and "label" not in t]
+    if not strays:
+        return payload
+    merged = dict(payload)
+    for stray in strays:
+        for key, value in stray.items():
+            merged.setdefault(key, value)
+    merged["turns"] = labelled
+    return merged
 
 
 async def _pass_b(grader: Model, result: Grade, reference_risk: str) -> tuple[bool, str | None]:

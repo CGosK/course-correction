@@ -235,3 +235,21 @@ async def test_two_arms_of_one_scenario_do_not_share_a_session(recorder, monkeyp
         second_arm_resume[second_arm_resume.index("--resume") + 1]
         != first_arm_resume[first_arm_resume.index("--resume") + 1]
     ), "the second arm resumed the first arm's session"
+
+
+@pytest.mark.asyncio
+async def test_a_model_with_its_own_cwd_ignores_the_per_sample_one(recorder, tmp_path, monkeypatch):
+    """The grader runs with its own directory. Inheriting the sample's would break re-scoring —
+    that directory is deleted when the sample ends — and would feed the grader the very
+    instructions it is judging."""
+    sample_dir, grader_dir = tmp_path / "sample", tmp_path / "grader"
+    sample_dir.mkdir()
+    grader_dir.mkdir()
+    monkeypatch.setattr(
+        "course_correction.providers.claude_code.store",
+        lambda: type("S", (), {"get": staticmethod(lambda key: str(sample_dir))})(),
+    )
+    await api(cwd=str(grader_dir)).generate(
+        [ChatMessageUser(content="grade this")], [], "none", GenerateConfig()
+    )
+    assert recorder[0]["cwd"] == str(grader_dir)

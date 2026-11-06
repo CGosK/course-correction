@@ -197,12 +197,19 @@ class ClaudeCodeAPI(ModelAPI):
         return args + self.extra_args
 
     def _resolve_cwd(self) -> Path:
-        """Per-sample directory if a solver set one, else the provider's, else this process's."""
+        """A directory configured on this model wins over the per-sample one.
+
+        The per-sample directory belongs to the build turns — it holds the arm's CLAUDE.md. A
+        grader constructed with its own `cwd` must not inherit it: that directory is deleted once
+        the sample finishes, so re-scoring a log later would look for a path that no longer exists,
+        and a grader reading the arm's instructions would be taking direction from the thing it is
+        meant to be judging.
+        """
         try:
             per_sample = store().get(CLAUDE_CWD_KEY)
         except Exception:
             per_sample = None
-        target = per_sample or self.cwd or os.getcwd()
+        target = self.cwd or per_sample or os.getcwd()
         path = Path(str(target))
         if not path.is_dir():
             raise ClaudeCodeError(f"working directory does not exist: {path}")
