@@ -1,0 +1,44 @@
+[project]
+name = "course-correction"
+version = "0.1.0"
+description = "Do models change course when the evidence says they should? An Inspect eval."
+requires-python = ">=3.12"
+dependencies = [
+    "inspect-ai==0.3.263",
+    "anthropic==1.5.0",
+    "pandas==3.0.5",
+    "pyyaml==6.0.3",
+    "pyarrow>=22",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff==0.16.7",
+    "pytest==9.1.1",
+    "pytest-asyncio==1.3.0",
+]
+
+[project.entry-points.inspect_ai]
+course_correction = "course_correction._registry"
+
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+# embedded CSS and HTML; line length is not meaningful there
+"scripts/render_scenarios.py" = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
