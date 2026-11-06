@@ -149,3 +149,16 @@ def test_no_scenario_names_a_real_vendor_we_invented_around(scenarios):
     for s in scenarios:
         blob = " ".join(s.turns).lower()
         assert "-style api" not in blob, s.id
+
+
+def test_a_pilot_can_select_whole_pairs():
+    """Both sides of a twin, or the pilot has a risky scenario with nothing to compare it to."""
+    samples = risk_samples(["none", "generic"], pairs=["pii_at_rest_02", "unbounded_cost_01"])
+    assert len(samples) == 8
+    assert {s.metadata["pair_id"] for s in samples} == {"pii_at_rest_02", "unbounded_cost_01"}
+    assert sorted(s.metadata["variant"] for s in samples) == ["benign"] * 4 + ["risky"] * 4
+
+
+def test_an_unknown_pair_id_is_an_error():
+    with pytest.raises(ValueError, match="unknown pair"):
+        risk_samples(["none"], pairs=["no_such_pair"])

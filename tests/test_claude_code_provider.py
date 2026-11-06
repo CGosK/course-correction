@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 from inspect_ai.model import (
     ChatMessageAssistant,
@@ -86,8 +88,17 @@ def test_stop_reason_mapping(raw, expected):
 def test_fingerprint_depends_on_role_and_text():
     a = [ChatMessageUser(content="hello")]
     b = [ChatMessageAssistant(content="hello")]
-    assert _fingerprint(a) != _fingerprint(b)
-    assert _fingerprint(a) == _fingerprint([ChatMessageUser(content="hello")])
+    assert _fingerprint(a, Path("/w")) != _fingerprint(b, Path("/w"))
+    same = _fingerprint([ChatMessageUser(content="hello")], Path("/w"))
+    assert _fingerprint(a, Path("/w")) == same
+
+
+def test_the_same_conversation_in_two_directories_is_two_sessions():
+    """Two arms of one scenario send byte-identical messages; the arm is the CLAUDE.md in the
+    working directory. Keyed on messages alone, the second would resume the first one's session and
+    silently run under the wrong arm."""
+    messages = [ChatMessageUser(content="build it")]
+    assert _fingerprint(messages, Path("/arm-none")) != _fingerprint(messages, Path("/arm-generic"))
 
 
 @pytest.mark.asyncio
@@ -188,3 +199,39 @@ def test_effort_is_passed_through_when_a_task_sets_it():
 def test_model_name_is_sent_verbatim_so_aliases_cannot_drift():
     args = api()._build_args([ChatMessageUser(content="hi")], None, "s1", GenerateConfig())
     assert args[args.index("--model") + 1] == "claude-haiku-5-5"
+
+
+@pytest.mark.asyncio
+async def test_two_arms_of_one_scenario_do_not_share_a_session(recorder, monkeypatch, tmp_path):
+    """One Model instance serves every sample in a run, and its session map is shared. Two arms of
+    the same scenario send byte-identical messages — the arm is the CLAUDE.md in the working
+    directory, which this process never sees. Keyed on messages alone, the second sample resumes the
+    first one's session, runs under the wrong arm, and the run looks healthy."""
+    arm_a, arm_b = tmp_path / "a", tmp_path / "b"
+    arm_a.mkdir()
+    arm_b.mkdir()
+    dirs = [arm_a, arm_a, arm_b, arm_b]  # sample 1 turns 1-2, then sample 2 turns 1-2
+    monkeypatch.setattr(ClaudeCodeAPI, "_resolve_cwd", lambda self: dirs.pop(0))
+
+    model = api()
+    turn1 = [ChatMessageUser(content="build it")]
+    out = await model.generate(turn1, [], "none", GenerateConfig())
+    turn2 = [
+        *turn1,
+        ChatMessageAssistant(content=out[0].completion),
+        ChatMessageUser(content="ship it"),
+    ]
+    await model.generate(turn2, [], "none", GenerateConfig())
+    await model.generate(turn1, [], "none", GenerateConfig())
+    await model.generate(turn2, [], "none", GenerateConfig())
+
+    first_arm_resume = recorder[1]["args"]
+    assert "--resume" in first_arm_resume
+
+    assert "--session-id" in recorder[2]["args"], "a new arm must open its own session"
+    second_arm_resume = recorder[3]["args"]
+    assert "--resume" in second_arm_resume
+    assert (
+        second_arm_resume[second_arm_resume.index("--resume") + 1]
+        != first_arm_resume[first_arm_resume.index("--resume") + 1]
+    ), "the second arm resumed the first arm's session"

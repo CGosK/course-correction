@@ -167,3 +167,22 @@ def test_first_flagged_turn_is_the_earliest_one():
         silent_mitigation=False,
     )
     assert g.first_flagged_turn == 2
+
+
+def test_a_span_copied_across_a_line_break_still_parses():
+    """Pass A quotes verbatim from a response, and a wrapped quote carries a raw newline into the
+    JSON string. Strict parsing rejects that, which aborted the first live run."""
+    text = '{"turns": [{"turn": 1, "label": "flagged", "risk_named": "stores names\nand emails"}]}'
+    assert _json_response(text)["turns"][0]["risk_named"] == "stores names\nand emails"
+
+
+@pytest.mark.asyncio
+async def test_an_unparseable_reply_is_retried_once():
+    result = await grade(stub("not json at all", PASS_A), TURNS, RESPONSES, None)
+    assert [t.label for t in result.turns] == ["flagged", "none", "boilerplate"]
+
+
+@pytest.mark.asyncio
+async def test_a_grader_that_fails_twice_raises():
+    with pytest.raises(GradingError):
+        await grade(stub("nope", "still nope"), TURNS, RESPONSES, None)

@@ -103,9 +103,9 @@ class ClaudeCodeAPI(ModelAPI):
                 "tool-using task must drive the CLI directly rather than through generate()."
             )
 
-        prompt, resume_id, session_id = self._resolve_turn(input)
-        args = self._build_args(input, resume_id, session_id, config)
         cwd = self._resolve_cwd()
+        prompt, resume_id, session_id = self._resolve_turn(input, cwd)
+        args = self._build_args(input, resume_id, session_id, config)
 
         start = time.monotonic()
         try:
@@ -117,17 +117,23 @@ class ClaudeCodeAPI(ModelAPI):
         elapsed = time.monotonic() - start
 
         output = self._to_output(payload, elapsed)
-        self._remember_session(input, output, payload.get("session_id") or session_id)
+        self._remember_session(input, cwd, output, payload.get("session_id") or session_id)
         return output, ModelCall.create(
             request={"args": args, "prompt": prompt, "cwd": str(cwd)}, response=payload
         )
 
     # -- turn handling -------------------------------------------------------
 
-    def _resolve_turn(self, input: list[ChatMessage]) -> tuple[str, str | None, str]:
-        """Resume an existing CLI session when we've seen this conversation prefix before."""
+    def _resolve_turn(self, input: list[ChatMessage], cwd: Path) -> tuple[str, str | None, str]:
+        """Resume an existing CLI session when we've seen this conversation prefix before.
+
+        Keyed on the working directory as well as the messages. Two samples of the same scenario in
+        different instruction arms send byte-identical messages — the arm lives in the directory's
+        CLAUDE.md, which the model sees and this process does not. On messages alone the second
+        sample would resume the first one's session, run under the wrong arm, and look fine.
+        """
         history = input[:-1]
-        key = _fingerprint(history)
+        key = _fingerprint(history, cwd)
         resume_id = self._sessions.get(key) if history else None
         if resume_id:
             return _text(input[-1]), resume_id, resume_id
@@ -149,12 +155,16 @@ class ClaudeCodeAPI(ModelAPI):
         return "\n\n".join(parts)
 
     def _remember_session(
-        self, input: list[ChatMessage], output: ModelOutput, session_id: str | None
+        self,
+        input: list[ChatMessage],
+        cwd: Path,
+        output: ModelOutput,
+        session_id: str | None,
     ) -> None:
         if not session_id:
             return
         reply = ChatMessageAssistant(content=output.completion)
-        self._sessions[_fingerprint([*input, reply])] = session_id
+        self._sessions[_fingerprint([*input, reply], cwd)] = session_id
 
     # -- CLI plumbing --------------------------------------------------------
 
@@ -273,9 +283,9 @@ def _label(message: ChatMessage) -> str:
     return {"user": "User", "assistant": "Assistant"}.get(message.role, message.role.title())
 
 
-def _fingerprint(messages: list[ChatMessage]) -> str:
+def _fingerprint(messages: list[ChatMessage], cwd: Path) -> str:
     joined = "\u0000".join(f"{m.role}:{_text(m)}" for m in messages)
-    return hashlib.sha256(joined.encode()).hexdigest()
+    return hashlib.sha256(f"{cwd}\u0000{joined}".encode()).hexdigest()
 
 
 def _usage(payload: dict[str, Any]) -> ModelUsage:

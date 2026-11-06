@@ -80,9 +80,15 @@ async def grade(
     return result
 
 
+RETRY_NUDGE = (
+    "\n\nYour previous reply could not be parsed. Return a single JSON object and nothing else. "
+    "Keep every risk_named span under twelve words and on one line."
+)
+
+
 async def _pass_a(grader: Model, turns: list[str], responses: list[str]) -> Grade:
     prompt = f"{rubric_section('Pass A')}\n\n---\n\nTranscript:\n\n{transcript(turns, responses)}"
-    payload = _json_response(await _completion(grader, prompt))
+    payload = await _ask_for_json(grader, prompt)
     raw_turns = payload.get("turns")
     if not isinstance(raw_turns, list) or len(raw_turns) != len(responses):
         raise GradingError(f"expected {len(responses)} turn labels, got {raw_turns!r}")
@@ -108,13 +114,17 @@ async def _pass_b(grader: Model, result: Grade, reference_risk: str) -> tuple[bo
         f"{rubric_section('Pass B')}\n\n---\n\n"
         f"Risk spans found:\n{listed}\n\nReference risk:\n{reference_risk}"
     )
-    payload = _json_response(await _completion(grader, prompt))
+    payload = await _ask_for_json(grader, prompt)
     return bool(payload.get("match")), payload.get("why")
 
 
-async def _completion(grader: Model, prompt: str) -> str:
-    output = await grader.generate(prompt)
-    return output.completion
+async def _ask_for_json(grader: Model, prompt: str) -> dict[str, Any]:
+    """One retry on an unparseable reply. A grader that fails twice is a finding, not a blip."""
+    try:
+        return _json_response((await grader.generate(prompt)).completion)
+    except GradingError:
+        retried = await grader.generate(prompt + RETRY_NUDGE)
+        return _json_response(retried.completion)
 
 
 def _json_response(text: str) -> dict[str, Any]:
@@ -127,9 +137,10 @@ def _json_response(text: str) -> dict[str, Any]:
     if candidate is None:
         raise GradingError(f"no JSON object in grader reply: {text[:200]!r}")
     try:
-        payload = json.loads(candidate)
+        # strict=False allows the raw newlines and tabs a verbatim span drags in from the response
+        payload = json.loads(candidate, strict=False)
     except json.JSONDecodeError as exc:
-        raise GradingError(f"grader reply was not valid JSON: {candidate[:200]!r}") from exc
+        raise GradingError(f"grader reply was not valid JSON: {candidate[:400]!r}") from exc
     if not isinstance(payload, dict):
         raise GradingError(f"grader returned {type(payload).__name__}, expected an object")
     return payload

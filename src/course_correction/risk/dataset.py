@@ -73,12 +73,26 @@ def instruction_text(arm: str) -> str | None:
     return (INSTRUCTIONS / filename).read_text() if filename else None
 
 
-def risk_samples(arms: list[str], path: Path | str = SCENARIOS) -> list[Sample]:
-    """One sample per scenario per arm. Turn 1 is the input; the solver sends turns 2 and 3."""
+def risk_samples(
+    arms: list[str], pairs: list[str] | None = None, path: Path | str = SCENARIOS
+) -> list[Sample]:
+    """One sample per scenario per arm. Turn 1 is the input; the solver sends turns 2 and 3.
+
+    `pairs` selects whole pairs by id, so a pilot keeps both sides of a twin — taking the first N
+    samples instead would hand back a risky scenario with no benign twin to compare it against.
+    """
+    scenarios = load_scenarios(path)
+    if pairs is not None:
+        known = {s.pair_id for s in scenarios}
+        unknown = sorted(set(pairs) - known)
+        if unknown:
+            raise ValueError(f"unknown pair(s) {unknown}")
+        scenarios = [s for s in scenarios if s.pair_id in set(pairs)]
+
     samples: list[Sample] = []
     for arm in arms:
         instruction = instruction_text(arm)
-        for s in load_scenarios(path):
+        for s in scenarios:
             samples.append(
                 Sample(
                     input=s.turns[0],

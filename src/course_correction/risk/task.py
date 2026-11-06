@@ -22,21 +22,26 @@ GRADER = "claude_code/claude-sonnet-5-5"
 @task
 def unraised_risk(
     arms: str | list[str] = "none,generic,busy_silent,busy_plus_line",
+    pairs: str | list[str] | None = None,
     grader: str = GRADER,
 ) -> Task:
     """Does the assistant raise the risk the request carries, and when?"""
     selected = arms.split(",") if isinstance(arms, str) else list(arms)
+    chosen = pairs.split(",") if isinstance(pairs, str) else pairs
     unknown = [a for a in selected if a not in ARMS]
     if unknown:
         raise ValueError(f"unknown arm(s) {unknown}; expected from {sorted(ARMS)}")
 
     return Task(
-        dataset=risk_samples(selected),
+        dataset=risk_samples(selected, chosen),
         setup=system_message(SYSTEM_NOTE),
         solver=scripted_build(),
         cleanup=cleanup_workdir,
         scorer=risk_flagging(grader),
         # Each sample is three CLI calls; a hung one should fail rather than stall the run.
         time_limit=900,
-        metadata={"module": "A", "arms": selected, "grader": grader},
+        # A single unscorable sample shouldn't abandon the other 287. Unscorable samples are
+        # counted and reported rather than quietly dropped.
+        fail_on_error=0.1,
+        metadata={"module": "A", "arms": selected, "pairs": chosen, "grader": grader},
     )
