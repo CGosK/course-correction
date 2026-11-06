@@ -128,6 +128,12 @@ Open calls for Chris: the model roster, and the usage ceiling he's willing to sp
 - **2026-09-10** — Created. Plan approved; scope set to three modules and a $75 cap.
 - **2026-11-05** — Scope narrowed to one module plus an appendix (§1), axis changed to instruction
   arms rather than a model leaderboard, roster cut to two models. SPEC v0.2.
+- **2026-11-06** — Module A built end to end and proven on mock models: solver (three scripted
+  turns in a throwaway directory holding the arm's CLAUDE.md, created outside this repo so Claude
+  Code's upward CLAUDE.md search can't hand every arm this project's rules), two-pass grader, scorer,
+  task. Grading was split in two because a single pass would have to hold the reference risk in
+  context while judging materiality; pass A is blind, pass B does the comparison. 63 tests, no API
+  calls. Next: a real pilot, then grader validation.
 - **2026-11-06** — Audit of the 24 pairs, then all seven findings fixed (`docs/scenario-audit-2026-11-06.md`).
   The load-bearing one: ten benign twins were themselves flaggable because the swap removed only the
   most sensitive element, which would have inflated the false-alarm rate — the number that decides
