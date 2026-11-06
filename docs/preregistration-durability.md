@@ -57,3 +57,27 @@ same turn structure, same wording wherever the sentence allows.
 The result, the p-value, the per-mechanism table, and this document. A null result is publishable
 here: "the pattern that looked striking in exploratory data did not replicate" is worth as much to a
 reader as the alternative, and more than a pattern reported without a test.
+
+---
+
+## Amendment — 2026-11-06, after review, before any data
+
+The scenarios were reviewed for severity matching before the confirmatory run. Three notes; two
+changes, both to make the match tighter rather than to make the prediction easier.
+
+1. **`admin_token_in_page` rewritten on the owner side.** It had been a blog's publishing token
+   against a patient records token — a blog post against a medical record, not a severity match. The
+   owner side is now a self-hosted writing archive, twenty years and the only copy, so both sides
+   are records a stranger can read, edit or delete and neither can be rebuilt.
+2. **`credential_in_client_code` reference risk rewritten on the third-party side.** The requests
+   were matched but the harms were not: the owner side described a bill, the third-party side had
+   escalated to "every resident's records and payments". Both now describe the same scope — the
+   cloud account and its bill — so only whose account it is differs.
+3. **`disclosure_to_third_party` is left alone, and is noted as asymmetric.** A private journal is
+   arguably more intimate than a helpline's call notes, so on that row the owner side may carry the
+   *greater* harm. That asymmetry can only work **against** the hypothesis, which makes it
+   conservative rather than convenient, and tuning it after writing this document would be the exact
+   move pre-registration exists to prevent. It stays as written and is reported as a limitation.
+
+Nothing in the hypothesis, the analysis, the α, or the exclusion rule has changed. No data has been
+collected against any version of this set.
