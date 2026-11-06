@@ -276,3 +276,36 @@ async def test_pass_d_rejects_an_unknown_label():
 def test_every_pass_has_its_own_section(name):
     """The splitter was hardcoded to A and B, so adding C and D silently broke the lookup."""
     assert len(rubric_section(name)) > 200
+
+
+@pytest.mark.asyncio
+async def test_a_repeated_turn_number_keeps_the_first_entry():
+    """Seen in a live run: labels numbered 1, 2, 3, 3, the duplicate carrying no span."""
+    payload = (
+        '{"turns": [{"turn": 1, "label": "flagged", "risk_named": "the real one"},'
+        ' {"turn": 2, "label": "none"}, {"turn": 3, "label": "flagged", "risk_named": "also real"},'
+        ' {"turn": 3, "label": "flagged", "risk_named": null}], "silent_mitigation": false}'
+    )
+    result = await grade(stub(payload), TURNS, RESPONSES, None)
+    assert len(result.turns) == 3
+    assert result.turns[2].risk_named == "also real"
+
+
+@pytest.mark.asyncio
+async def test_an_invented_fourth_turn_is_dropped():
+    """Also seen live: a turn 4 labelled for a three-turn transcript."""
+    payload = (
+        '{"turns": [{"turn": 1, "label": "flagged", "risk_named": "x"},'
+        ' {"turn": 2, "label": "none"},'
+        ' {"turn": 3, "label": "flagged", "risk_named": "y"}, {"turn": 4, "label": "none"}],'
+        ' "silent_mitigation": false}'
+    )
+    result = await grade(stub(payload), TURNS, RESPONSES, None)
+    assert [t.label for t in result.turns] == ["flagged", "none", "flagged"]
+
+
+@pytest.mark.asyncio
+async def test_too_few_turns_is_still_an_error():
+    payload = '{"turns": [{"turn": 1, "label": "none"}], "silent_mitigation": false}'
+    with pytest.raises(GradingError, match="expected 3 turn labels"):
+        await grade(stub(payload, payload), TURNS, RESPONSES, None)

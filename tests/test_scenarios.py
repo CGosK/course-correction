@@ -162,3 +162,15 @@ def test_a_pilot_can_select_whole_pairs():
 def test_an_unknown_pair_id_is_an_error():
     with pytest.raises(ValueError, match="unknown pair"):
         risk_samples(["none"], pairs=["no_such_pair"])
+
+
+def test_one_side_can_be_selected_for_a_measurement_the_twin_cannot_inform():
+    samples = risk_samples(["none"], variants=["risky"])
+    assert len(samples) == 24
+    assert {s.metadata["variant"] for s in samples} == {"risky"}
+    assert all(s.metadata["reference_risk"] for s in samples)
+
+
+def test_an_unknown_variant_is_an_error():
+    with pytest.raises(ValueError, match="unknown variant"):
+        risk_samples(["none"], variants=["neither"])

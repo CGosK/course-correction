@@ -98,9 +98,7 @@ RETRY_NUDGE = (
 async def _pass_a(grader: Model, turns: list[str], responses: list[str]) -> Grade:
     prompt = f"{rubric_section('Pass A')}\n\n---\n\nTranscript:\n\n{transcript(turns, responses)}"
     payload = _normalise(await _ask_for_json(grader, prompt))
-    raw_turns = payload.get("turns")
-    if not isinstance(raw_turns, list) or len(raw_turns) != len(responses):
-        raise GradingError(f"expected {len(responses)} turn labels, got {raw_turns!r}")
+    raw_turns = _align_turns(payload.get("turns"), len(responses))
 
     graded: list[TurnGrade] = []
     for index, item in enumerate(raw_turns, start=1):
@@ -115,6 +113,34 @@ async def _pass_a(grader: Model, turns: list[str], responses: list[str]) -> Grad
         declined=bool(payload.get("declined")),
         raw=payload,
     )
+
+
+def _align_turns(raw: Any, expected: int) -> list[dict[str, Any]]:
+    """One entry per turn, in order, from a list the grader may have miscounted.
+
+    Both malformations below came out of a single 24-sample run, and both are recoverable:
+    labels numbered 1, 2, 3, 3 (turn 3 repeated, the duplicate carrying nothing), and 1, 2, 3, 4
+    (a fourth turn invented for a three-turn transcript). Dropping the sample over either would
+    discard a complete, correctly labelled transcript.
+    """
+    if not isinstance(raw, list):
+        raise GradingError(f"expected a list of turn labels, got {raw!r}")
+
+    by_turn: dict[int, dict[str, Any]] = {}
+    for position, item in enumerate(raw, start=1):
+        if not isinstance(item, dict):
+            continue
+        number = item.get("turn", position)
+        try:
+            number = int(number)
+        except (TypeError, ValueError):
+            number = position
+        if 1 <= number <= expected:
+            by_turn.setdefault(number, item)  # first entry for a turn wins
+
+    if len(by_turn) != expected:
+        raise GradingError(f"expected {expected} turn labels, got {raw!r}")
+    return [by_turn[n] for n in range(1, expected + 1)]
 
 
 def _normalise(payload: dict[str, Any]) -> dict[str, Any]:

@@ -74,12 +74,19 @@ def instruction_text(arm: str) -> str | None:
 
 
 def risk_samples(
-    arms: list[str], pairs: list[str] | None = None, path: Path | str = SCENARIOS
+    arms: list[str],
+    pairs: list[str] | None = None,
+    variants: list[str] | None = None,
+    path: Path | str = SCENARIOS,
 ) -> list[Sample]:
     """One sample per scenario per arm. Turn 1 is the input; the solver sends turns 2 and 3.
 
     `pairs` selects whole pairs by id, so a pilot keeps both sides of a twin — taking the first N
     samples instead would hand back a risky scenario with no benign twin to compare it against.
+
+    `variants` narrows to one side. Use it only for a measurement where the twin adds nothing: the
+    dismissal question asks whether a warning about a real risk survives pushback, and a benign
+    twin has no real risk to abandon. Any rate comparing risky against benign needs both.
     """
     scenarios = load_scenarios(path)
     if pairs is not None:
@@ -88,6 +95,12 @@ def risk_samples(
         if unknown:
             raise ValueError(f"unknown pair(s) {unknown}")
         scenarios = [s for s in scenarios if s.pair_id in set(pairs)]
+
+    if variants is not None:
+        unknown_variants = sorted(set(variants) - {"risky", "benign"})
+        if unknown_variants:
+            raise ValueError(f"unknown variant(s) {unknown_variants}")
+        scenarios = [s for s in scenarios if s.variant in set(variants)]
 
     samples: list[Sample] = []
     for arm in arms:

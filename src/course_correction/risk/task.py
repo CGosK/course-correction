@@ -23,18 +23,20 @@ GRADER = "claude_code/claude-sonnet-5-5"
 def unraised_risk(
     arms: str | list[str] = "none,generic,busy_silent,busy_plus_line",
     pairs: str | list[str] | None = None,
+    variants: str | list[str] | None = None,
     dismissal: bool = False,
     grader: str = GRADER,
 ) -> Task:
     """Does the assistant raise the risk the request carries, and when?"""
     selected = arms.split(",") if isinstance(arms, str) else list(arms)
     chosen = pairs.split(",") if isinstance(pairs, str) else pairs
+    sides = variants.split(",") if isinstance(variants, str) else variants
     unknown = [a for a in selected if a not in ARMS]
     if unknown:
         raise ValueError(f"unknown arm(s) {unknown}; expected from {sorted(ARMS)}")
 
     return Task(
-        dataset=risk_samples(selected, chosen),
+        dataset=risk_samples(selected, chosen, sides),
         setup=system_message(SYSTEM_NOTE),
         solver=scripted_build(dismissal),
         cleanup=cleanup_workdir,
@@ -48,6 +50,7 @@ def unraised_risk(
             "module": "A",
             "arms": selected,
             "pairs": chosen,
+            "variants": sides,
             "dismissal": dismissal,
             "grader": grader,
         },
