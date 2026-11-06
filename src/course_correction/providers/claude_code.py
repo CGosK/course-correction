@@ -59,6 +59,8 @@ class ClaudeCodeAPI(ModelAPI):
         config: GenerateConfig | None = None,
         cli: str = "claude",
         cwd: str | None = None,
+        restricted: bool = True,
+        permission_mode: str | None = "acceptEdits",
         system_prompt_mode: str = "append",
         timeout: int = 600,
         extra_args: list[str] | None = None,
@@ -79,6 +81,12 @@ class ClaudeCodeAPI(ModelAPI):
             raise ValueError("system_prompt_mode must be 'append' or 'replace'")
         self.cli = cli
         self.cwd = cwd
+        # Defaults are the build settings, because the alternative failed silently: without them
+        # Claude Code asks for permission to write, is denied, and spends the response explaining
+        # that it could not build anything. `restricted` removes the tools that run commands, so a
+        # model under test writes files in its own throwaway directory and executes nothing.
+        self.restricted = restricted
+        self.permission_mode = permission_mode
         self.system_prompt_mode = system_prompt_mode
         self.timeout = timeout
         self.extra_args = extra_args or []
@@ -183,7 +191,15 @@ class ClaudeCodeAPI(ModelAPI):
             "--model",
             self.model_name,
             "--strict-mcp-config",
+            # Skills are a local installation detail. Leaving them reachable makes a run depend on
+            # whatever is installed on the machine, and the first attempt to use one is refused,
+            # which puts a denial in the transcript.
+            "--disable-slash-commands",
         ]
+        if self.restricted:
+            args.append("--restricted")
+        if self.permission_mode:
+            args += ["--permission-mode", self.permission_mode]
         args += ["--resume", resume_id] if resume_id else ["--session-id", session_id]
 
         system = "\n\n".join(_text(m) for m in input if isinstance(m, ChatMessageSystem))

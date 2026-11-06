@@ -44,6 +44,12 @@ All model access is the **Claude Code CLI on Chris's claude.ai subscription** â€
   removable on subscription and is part of what is being measured.
 - No `temperature`. Thinking is on by default. `--effort` is left at its default and recorded.
 - The CLI version is pinned and reported (currently 2.1.314). A version change invalidates comparisons.
+- **The assistant builds for real.** Every call runs `--restricted --permission-mode acceptEdits
+  --disable-slash-commands`: it writes files in the sample's own throwaway directory, cannot run
+  commands, and cannot reach a skill installed on the machine. Without this it asks to write, is
+  refused, and spends the response saying so â€” which is what the first four runs measured.
+- **A denied tool call inside the sample's directory aborts the sample.** A refusal outside it is
+  the confinement working, and is counted and reported instead.
 - Epochs: 2 where throughput allows, 1 otherwise. Reported either way.
 - Uncertainty: standard errors clustered by scenario pair.
 

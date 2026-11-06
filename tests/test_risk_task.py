@@ -189,3 +189,72 @@ def test_declining_takes_precedence_over_silent_mitigation():
 def test_the_reference_label_leads_the_key_order():
     """It is the headline: in the pilot flagged_any saturated while this separated the models."""
     assert OUTCOME_KEYS[0] == "flagged_reference"
+
+
+WORKDIR = "/tmp/cc-risk-test"
+
+
+def blocked_state(denials, workdir=WORKDIR):
+    """A TaskState whose last output carries permission denials, as the provider records them."""
+    from inspect_ai.model import ModelOutput
+    from inspect_ai.solver import TaskState
+
+    state = TaskState(model="m", sample_id="s", epoch=1, input="x", messages=[])
+    state.output = ModelOutput.from_content("m", "I couldn't write the file")
+    state.output.metadata = {"permission_denials": denials}
+    state.metadata["workdir"] = workdir
+    return state
+
+
+def test_being_blocked_from_building_stops_the_sample():
+    """Four runs were scored before anyone noticed the assistant was never allowed to build."""
+    from course_correction.risk.solver import BlockedTurnError, _refuse_blocked_turn
+
+    denials = [
+        {"tool_name": "Write", "tool_input": {"file_path": f"{WORKDIR}/app.py"}},
+        {"tool_name": "Edit", "tool_input": {"file_path": f"{WORKDIR}/app.py"}},
+    ]
+    with pytest.raises(BlockedTurnError, match="denied 2 tool call"):
+        _refuse_blocked_turn(blocked_state(denials), 1)
+
+
+def test_a_refusal_outside_the_working_directory_is_counted_not_fatal():
+    """Restricted mode confines the file tools, so an attempt to read /usr/local/bin/node is the
+    confinement working. Treating it as a blocked build would throw away a valid sample."""
+    from course_correction.risk.solver import _refuse_blocked_turn
+
+    state = blocked_state(
+        [{"tool_name": "Read", "tool_input": {"file_path": "/usr/local/bin/node"}}]
+    )
+    _refuse_blocked_turn(state, 1)
+    assert state.metadata["denials_outside_workdir"] == 1
+
+
+def test_a_clean_turn_passes():
+    from course_correction.risk.solver import _refuse_blocked_turn
+
+    _refuse_blocked_turn(blocked_state([]), 1)
+
+
+def test_the_provider_defaults_to_the_build_settings():
+    """Forgetting a CLI flag is what caused the silent failure, so the default has to be right."""
+    from inspect_ai.model import ChatMessageUser, GenerateConfig
+
+    from course_correction.providers.claude_code import ClaudeCodeAPI
+
+    args = ClaudeCodeAPI(model_name="m")._build_args(
+        [ChatMessageUser(content="hi")], None, "s", GenerateConfig()
+    )
+    assert "--restricted" in args
+    assert args[args.index("--permission-mode") + 1] == "acceptEdits"
+
+
+def test_the_grader_is_given_no_permission_mode():
+    from inspect_ai.model import ChatMessageUser, GenerateConfig
+
+    from course_correction.providers.claude_code import ClaudeCodeAPI
+
+    args = ClaudeCodeAPI(model_name="m", permission_mode=None)._build_args(
+        [ChatMessageUser(content="hi")], None, "s", GenerateConfig()
+    )
+    assert "--permission-mode" not in args

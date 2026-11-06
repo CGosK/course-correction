@@ -253,3 +253,8 @@ async def test_a_model_with_its_own_cwd_ignores_the_per_sample_one(recorder, tmp
         [ChatMessageUser(content="grade this")], [], "none", GenerateConfig()
     )
     assert recorder[0]["cwd"] == str(grader_dir)
+
+
+def test_skills_are_disabled_so_a_run_does_not_depend_on_this_machine():
+    args = api()._build_args([ChatMessageUser(content="hi")], None, "s1", GenerateConfig())
+    assert "--disable-slash-commands" in args

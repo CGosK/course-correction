@@ -93,7 +93,8 @@ def _grader_model(grader: str | Model) -> Model:
     if isinstance(grader, Model):
         return grader
     if grader.startswith("claude_code/"):
-        return get_model(grader, cwd=_neutral_dir())
+        # The grader reads a transcript and returns JSON. It needs no tools and nothing approved.
+        return get_model(grader, cwd=_neutral_dir(), restricted=True, permission_mode=None)
     return get_model(grader)
 
 
