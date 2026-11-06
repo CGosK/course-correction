@@ -1,6 +1,7 @@
-"""Render data/risk/scenarios.yaml as a review page.
+"""Render a scenario set as a review page.
 
     .venv/bin/python scripts/render_scenarios.py <output.html>
+    .venv/bin/python scripts/render_scenarios.py <output.html> --durability
 
 The page is generated rather than hand-written so it can never drift from the data it reviews.
 """
@@ -312,6 +313,81 @@ def render(path: Path) -> None:
     print(f"wrote {path} ({len(page):,} bytes, {len(by_pair)} pairs)")
 
 
+def render_durability(path: Path) -> None:
+    """The confirmatory set, paired by mechanism so severity matching is checkable at a glance."""
+    import yaml
+
+    from course_correction.risk.dataset import DURABILITY
+
+    raw = yaml.safe_load(DURABILITY.read_text())
+    by_mechanism: dict[str, dict[str, dict]] = {}
+    for item in raw:
+        by_mechanism.setdefault(item["mechanism"], {})[item["harm_falls_on"]] = item
+
+    cards = []
+    for mechanism, sides in by_mechanism.items():
+        owner, third = sides["owner"], sides["third_party"]
+        shared = "".join(f"<li>{html.escape(' '.join(t.split()))}</li>" for t in owner["turns"][1:])
+        cards.append(f"""
+<article data-pair="{mechanism}" data-category="{mechanism}" data-salience="implicit">
+  <div class="pair-head">
+    <span class="pair-id">{html.escape(mechanism.replace("_", " "))}</span>
+    <label class="review"><input type="checkbox"> reviewed</label>
+  </div>
+  <div class="sides">
+    <div class="side risky">
+      <h3>Harm falls on the owner</h3>
+      <p class="turn">{html.escape(" ".join(owner["turns"][0].split()))}</p>
+      <p class="note">{html.escape(" ".join(owner["reference_risk"].split()))}</p>
+    </div>
+    <div class="side benign">
+      <h3>Harm falls on other people</h3>
+      <p class="turn">{html.escape(" ".join(third["turns"][0].split()))}</p>
+      <p class="note">{html.escape(" ".join(third["reference_risk"].split()))}</p>
+    </div>
+  </div>
+  <div class="shared">
+    <h3>Turns 2 and 3 &middot; the owner side (the other differs only where the sentence must)</h3>
+    <ol class="turns" start="2">{shared}</ol>
+  </div>
+</article>""")
+
+    page = f"""<title>Whose Harm Gets Dropped</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>{STYLE}</style>
+<div class="wrap">
+  <header>
+    <h1>Whose harm gets dropped</h1>
+    <p class="standfirst">The confirmatory set for the pre-registered question: when a user waves a
+      warning away, is it dropped more readily when the harm falls on them than when it falls on
+      someone else? Each mechanism is written twice and differs only in who gets hurt, so that
+      severity cannot explain a difference. <strong>The thing to check is whether the two sides of
+      each row really are comparable in severity.</strong></p>
+    <div class="counts">
+      <div><span class="k">Scenarios</span><span class="v">{len(raw)}</span></div>
+      <div><span class="k">Mechanisms</span><span class="v">{len(by_mechanism)}</span></div>
+      <div><span class="k">Owner harm</span><span class="v">8</span></div>
+      <div><span class="k">Third-party harm</span><span class="v">8</span></div>
+    </div>
+  </header>
+  <div class="controls"><span class="progress" id="progress"></span></div>
+  <p class="empty" id="empty" hidden></p>
+  <div class="pairs">{"".join(cards)}</div>
+  <footer>
+    <p>Generated from <code>data/risk/durability.yaml</code>. The prediction and the analysis were
+      fixed in <code>docs/preregistration-durability.md</code> before these scenarios were written.</p>
+  </footer>
+</div>
+<script>{SCRIPT}</script>
+"""
+    path.write_text(page)
+    print(f"wrote {path} ({len(page):,} bytes, {len(by_mechanism)} mechanisms)")
+
+
 if __name__ == "__main__":
     out = Path(sys.argv[1] if len(sys.argv) > 1 else "scenarios-review.html")
-    render(out)
+    if "--durability" in sys.argv:
+        render_durability(out)
+    else:
+        render(out)

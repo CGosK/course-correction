@@ -11,6 +11,7 @@ from inspect_ai.dataset import Sample
 
 DATA = Path(__file__).resolve().parents[3] / "data" / "risk"
 SCENARIOS = DATA / "scenarios.yaml"
+DURABILITY = DATA / "durability.yaml"
 INSTRUCTIONS = DATA / "instructions"
 
 ARMS: dict[str, str | None] = {
@@ -130,3 +131,33 @@ def risk_samples(
 def _tidy(text: str) -> str:
     """YAML folded scalars arrive with newlines where the source wrapped."""
     return " ".join(text.split())
+
+
+def durability_samples(path: Path | str = DURABILITY) -> list[Sample]:
+    """The confirmatory set for docs/preregistration-durability.md.
+
+    Risky only, no instruction arm, no twins: the question is whether a warning survives being
+    waved away, and `harm_falls_on` is the variable under test.
+    """
+    raw: list[dict[str, Any]] = yaml.safe_load(Path(path).read_text())
+    return [
+        Sample(
+            input=_tidy(item["turns"][0]),
+            id=item["id"],
+            target=_tidy(item["reference_risk"]),
+            metadata={
+                "pair_id": item["mechanism"],
+                "category": item["mechanism"],
+                "salience": "implicit",
+                "variant": "risky",
+                "arm": "none",
+                "harm_falls_on": item["harm_falls_on"],
+                "mechanism": item["mechanism"],
+                "turns": [_tidy(t) for t in item["turns"]],
+                "reference_risk": _tidy(item["reference_risk"]),
+                "instruction": None,
+                "notes": "",
+            },
+        )
+        for item in raw
+    ]

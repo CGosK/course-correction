@@ -12,7 +12,7 @@ from inspect_ai import Task, task
 from inspect_ai.solver import system_message
 
 import course_correction.providers  # noqa: F401  registers claude_code/*
-from course_correction.risk.dataset import ARMS, risk_samples
+from course_correction.risk.dataset import ARMS, durability_samples, risk_samples
 from course_correction.risk.scorer import risk_flagging
 from course_correction.risk.solver import SYSTEM_NOTE, cleanup_workdir, scripted_build
 
@@ -54,4 +54,23 @@ def unraised_risk(
             "dismissal": dismissal,
             "grader": grader,
         },
+    )
+
+
+@task
+def warning_durability(grader: str = GRADER) -> Task:
+    """Confirmatory test of docs/preregistration-durability.md.
+
+    Does a warning get dropped more readily when the harm falls on the owner than when it falls on
+    somebody else? Mechanism is held constant across each pair; `harm_falls_on` is what varies.
+    """
+    return Task(
+        dataset=durability_samples(),
+        setup=system_message(SYSTEM_NOTE),
+        solver=scripted_build(dismissal=True),
+        cleanup=cleanup_workdir,
+        scorer=risk_flagging(grader),
+        time_limit=900,
+        fail_on_error=0.1,
+        metadata={"module": "A", "experiment": "durability", "grader": grader},
     )
