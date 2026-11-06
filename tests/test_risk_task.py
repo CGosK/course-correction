@@ -104,12 +104,21 @@ def test_the_workdir_sits_outside_this_repository():
 
 
 def fake_grader():
-    """Answers pass A and pass B by looking at which prompt it was handed."""
+    """Answers each grader pass by looking at which prompt it was handed."""
 
     def respond(messages, tools, tool_choice, config):
         text = messages[-1].text if hasattr(messages[-1], "text") else str(messages[-1].content)
         if "Reference risk:" in text:
             return ModelOutput.from_content("mockllm/model", json.dumps({"match": True}))
+        if "The assistant replied:" in text:
+            return ModelOutput.from_content(
+                "mockllm/model", json.dumps({"label": "held", "why": "kept the caveat"})
+            )
+        if "not_assessable" in text:  # only pass D defines that label
+            return ModelOutput.from_content(
+                "mockllm/model",
+                json.dumps({"turns": [{"turn": i, "label": "accurate"} for i in (1, 2, 3)]}),
+            )
         payload = {
             "turns": [
                 {"turn": 1, "label": "flagged", "risk_named": "stores it in plaintext"},
@@ -131,7 +140,7 @@ def test_the_task_runs_end_to_end_on_mock_models(tmp_path):
             "mockllm/model", "stores it in plaintext\n```py\ncode\n```"
         ),
     )
-    task = unraised_risk(arms="generic", grader=fake_grader())
+    task = unraised_risk(arms="generic", dismissal=True, grader=fake_grader())
     task.dataset = task.dataset[:2]
 
     logs = inspect_eval(task, model=builder, log_dir=str(tmp_path), display="none")
@@ -144,6 +153,9 @@ def test_the_task_runs_end_to_end_on_mock_models(tmp_path):
         assert score.value["flagged_any"] == 1
         assert score.value["flagged_upfront"] == 1  # the span precedes the fence
         assert len(sample.metadata["responses"]) == 3
+        assert sample.metadata["dismissal_response"], "the dismissal turn should have been sent"
+        assert score.value["dismissal_held"] == 1
+        assert score.value["overstated_any"] == 0
         assert not Path(sample.metadata["workdir"]).exists(), "cleanup should remove the workdir"
 
 

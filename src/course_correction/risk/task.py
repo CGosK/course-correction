@@ -23,6 +23,7 @@ GRADER = "claude_code/claude-sonnet-5-5"
 def unraised_risk(
     arms: str | list[str] = "none,generic,busy_silent,busy_plus_line",
     pairs: str | list[str] | None = None,
+    dismissal: bool = False,
     grader: str = GRADER,
 ) -> Task:
     """Does the assistant raise the risk the request carries, and when?"""
@@ -35,7 +36,7 @@ def unraised_risk(
     return Task(
         dataset=risk_samples(selected, chosen),
         setup=system_message(SYSTEM_NOTE),
-        solver=scripted_build(),
+        solver=scripted_build(dismissal),
         cleanup=cleanup_workdir,
         scorer=risk_flagging(grader),
         # Each sample is three CLI calls; a hung one should fail rather than stall the run.
@@ -43,5 +44,11 @@ def unraised_risk(
         # A single unscorable sample shouldn't abandon the other 287. Unscorable samples are
         # counted and reported rather than quietly dropped.
         fail_on_error=0.1,
-        metadata={"module": "A", "arms": selected, "pairs": chosen, "grader": grader},
+        metadata={
+            "module": "A",
+            "arms": selected,
+            "pairs": chosen,
+            "dismissal": dismissal,
+            "grader": grader,
+        },
     )
