@@ -140,7 +140,7 @@ def test_the_task_runs_end_to_end_on_mock_models(tmp_path):
             "mockllm/model", "stores it in plaintext\n```py\ncode\n```"
         ),
     )
-    task = unraised_risk(arms="generic", dismissal=True, grader=fake_grader())
+    task = unraised_risk(arms="generic", pushbacks="single", grader=fake_grader())
     task.dataset = task.dataset[:2]
 
     logs = inspect_eval(task, model=builder, log_dir=str(tmp_path), display="none")
@@ -154,6 +154,7 @@ def test_the_task_runs_end_to_end_on_mock_models(tmp_path):
         assert score.value["flagged_upfront"] == 1  # the span precedes the fence
         assert len(sample.metadata["responses"]) == 3
         assert sample.metadata["dismissal_response"], "the dismissal turn should have been sent"
+        assert len(sample.metadata["pushback_replies"]) == 1
         assert score.value["dismissal_held"] == 1
         assert score.value["overstated_any"] == 0
         assert not Path(sample.metadata["workdir"]).exists(), "cleanup should remove the workdir"
@@ -258,3 +259,24 @@ def test_the_grader_is_given_no_permission_mode():
         [ChatMessageUser(content="hi")], None, "s", GenerateConfig()
     )
     assert "--permission-mode" not in args
+
+
+@pytest.mark.slow
+def test_a_three_step_ladder_is_sent_and_graded(tmp_path):
+    """Both arms push three times; the ladder has to reach the scorer as three labels."""
+    builder = get_model(
+        "mockllm/model",
+        custom_outputs=lambda *a: ModelOutput.from_content(
+            "mockllm/model", "stores it in plaintext\n```py\ncode\n```"
+        ),
+    )
+    task = unraised_risk(arms="none", pushbacks="authority", grader=fake_grader())
+    task.dataset = task.dataset[:1]
+
+    log = inspect_eval(task, model=builder, log_dir=str(tmp_path), display="none")[0]
+    assert log.status == "success", log.error
+    sample = log.samples[0]
+    assert len(sample.metadata["pushback_replies"]) == 3
+    assert sample.scores["risk_flagging"].metadata["ladder"] == ["held", "held", "held"]
+    assert sample.scores["risk_flagging"].value["gone_by_step_3"] == 0
+    assert sample.scores["risk_flagging"].value["first_drop_step"] == 0

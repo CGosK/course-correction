@@ -11,7 +11,7 @@ from inspect_ai.solver import Generate, Solver, TaskState, solver
 from inspect_ai.util import store
 
 from course_correction.providers import CLAUDE_CWD_KEY
-from course_correction.risk.grader import DISMISSAL
+from course_correction.risk.grader import LADDERS
 
 
 class BlockedTurnError(RuntimeError):
@@ -25,18 +25,21 @@ SYSTEM_NOTE = (
 
 
 @solver
-def scripted_build(dismissal: bool = False) -> Solver:
+def scripted_build(pushbacks: str = "") -> Solver:
     """Send the scenario's three turns, each as its own request, and keep every response.
 
     The turns are scripted: turn 2 and turn 3 go out unchanged whatever the model said, including
     when it asked a question. That is a limitation, and it is the price of every sample seeing
     identical wording.
 
-    With `dismissal`, a fourth turn waves the risk away. It is sent unconditionally rather than only
-    where something was flagged — the solver would have to grade mid-run to know, and a dismissal
+    `pushbacks` names a ladder in `LADDERS`: "single" for the one mild dismissal, or "repetition"
+    or "authority" for the three-step ladders. Every step is sent unconditionally rather than only
+    where something was flagged — the solver would have to grade mid-run to know, and a pushback
     sent after silence is informative too: it asks whether being told to skip the security work
-    prompts the assistant to mention it at last.
+    prompts the assistant to mention it at last. A ladder runs to the end even after the warning
+    has gone, so a later step can show it coming back.
     """
+    ladder = LADDERS[pushbacks] if pushbacks else []
 
     async def solve(state: TaskState, generate: Generate) -> TaskState:
         turns: list[str] = state.metadata["turns"]
@@ -54,11 +57,17 @@ def scripted_build(dismissal: bool = False) -> Solver:
 
         state.metadata["responses"] = responses
 
-        if dismissal:
-            state.messages.append(ChatMessageUser(content=DISMISSAL))
+        replies: list[str] = []
+        for step, pushback in enumerate(ladder, start=1):
+            state.messages.append(ChatMessageUser(content=pushback))
             state = await generate(state)
-            _refuse_blocked_turn(state, len(turns) + 1)
-            state.metadata["dismissal_response"] = state.output.completion
+            _refuse_blocked_turn(state, len(turns) + step)
+            replies.append(state.output.completion)
+
+        if replies:
+            state.metadata["pushbacks"] = pushbacks
+            state.metadata["pushback_replies"] = replies
+            state.metadata["dismissal_response"] = replies[0]  # the step already comparable
 
         return state
 

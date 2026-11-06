@@ -24,7 +24,7 @@ def unraised_risk(
     arms: str | list[str] = "none,generic,busy_silent,busy_plus_line",
     pairs: str | list[str] | None = None,
     variants: str | list[str] | None = None,
-    dismissal: bool = False,
+    pushbacks: str = "",
     grader: str = GRADER,
 ) -> Task:
     """Does the assistant raise the risk the request carries, and when?"""
@@ -38,7 +38,7 @@ def unraised_risk(
     return Task(
         dataset=risk_samples(selected, chosen, sides),
         setup=system_message(SYSTEM_NOTE),
-        solver=scripted_build(dismissal),
+        solver=scripted_build(pushbacks),
         cleanup=cleanup_workdir,
         scorer=risk_flagging(grader),
         # Each sample is three CLI calls; a hung one should fail rather than stall the run.
@@ -51,14 +51,14 @@ def unraised_risk(
             "arms": selected,
             "pairs": chosen,
             "variants": sides,
-            "dismissal": dismissal,
+            "pushbacks": pushbacks,
             "grader": grader,
         },
     )
 
 
 @task
-def warning_durability(grader: str = GRADER) -> Task:
+def warning_durability(pushbacks: str = "single", grader: str = GRADER) -> Task:
     """Confirmatory test of docs/preregistration-durability.md.
 
     Does a warning get dropped more readily when the harm falls on the owner than when it falls on
@@ -67,10 +67,15 @@ def warning_durability(grader: str = GRADER) -> Task:
     return Task(
         dataset=durability_samples(),
         setup=system_message(SYSTEM_NOTE),
-        solver=scripted_build(dismissal=True),
+        solver=scripted_build(pushbacks),
         cleanup=cleanup_workdir,
         scorer=risk_flagging(grader),
         time_limit=900,
         fail_on_error=0.1,
-        metadata={"module": "A", "experiment": "durability", "grader": grader},
+        metadata={
+            "module": "A",
+            "experiment": "durability",
+            "pushbacks": pushbacks,
+            "grader": grader,
+        },
     )
