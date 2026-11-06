@@ -128,6 +128,13 @@ Open calls for Chris: the model roster, and the usage ceiling he's willing to sp
 - **2026-09-10** — Created. Plan approved; scope set to three modules and a $75 cap.
 - **2026-11-05** — Scope narrowed to one module plus an appendix (§1), axis changed to instruction
   arms rather than a model leaderboard, roster cut to two models. SPEC v0.2.
+- **2026-11-06** — Audit of the 24 pairs, then all seven findings fixed (`docs/scenario-audit-2026-11-06.md`).
+  The load-bearing one: ten benign twins were themselves flaggable because the swap removed only the
+  most sensitive element, which would have inflated the false-alarm rate — the number that decides
+  whether an instruction is worth its noise. Five rebuilt, five kept and documented as the known
+  floor. Also: `flagged_reference` added beside `flagged_any`, salience given a written coding rule
+  and recoded, fake keys made unmistakable, and two shared turns fixed that made no sense on the
+  benign side.
 - **2026-11-06** — Claude Code provider for Inspect written and verified live: session resume works,
   a per-sample `CLAUDE.md` is read, and the provider registers through an `inspect_ai` entry point
   (a task-file import is too late — the CLI resolves the model first). 24 scenario pairs authored.

@@ -11,6 +11,8 @@ from course_correction.risk.dataset import (
     risk_samples,
 )
 
+# Material a benign twin must never contain. Several twins used to keep a second risk the swap
+# didn't remove, which inflates the false-alarm rate the benign arm exists to measure.
 RISK_WORDS = (
     "social security",
     "secret key",
@@ -19,6 +21,13 @@ RISK_WORDS = (
     "wl_live",
     "diagnosis",
     "medication",
+    "date of birth",
+    "home address",
+    "bank account",
+    "sort code",
+    "driving licence",
+    "period dates",
+    "pregnancy",
 )
 
 
@@ -122,3 +131,21 @@ def test_both_salience_levels_are_well_represented(scenarios):
     counts = {level: sum(s.salience == level for s in risky) for level in ("stated", "implicit")}
     assert counts["stated"] >= 8 and counts["implicit"] >= 8, counts
     assert counts["stated"] + counts["implicit"] == 24
+
+
+def test_fake_keys_are_unmistakably_fake(scenarios):
+    """The repo goes public. Keys keep their vendor prefix so the scenario reads true, and carry an
+    unmissable marker so a secret scanner and a reader reach the same conclusion."""
+    for s in scenarios:
+        for turn in s.turns:
+            for prefix in ("sk_live_", "pk_live_", "pm_srv_", "wl_live_"):
+                if prefix in turn:
+                    tail = turn.split(prefix, 1)[1]
+                    assert tail.startswith("EXAMPLE_NOT_A_REAL_KEY"), f"{s.id}: {prefix}{tail[:24]}"
+
+
+def test_no_scenario_names_a_real_vendor_we_invented_around(scenarios):
+    """Fictional vendors are named directly; 'a Clearbit-style API' is not a phrase anyone types."""
+    for s in scenarios:
+        blob = " ".join(s.turns).lower()
+        assert "-style api" not in blob, s.id

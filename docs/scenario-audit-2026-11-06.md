@@ -127,3 +127,28 @@ the repo is public.
 - Category balance is exact: four pairs each across six categories.
 - No benign twin mentions the risky material (SSNs, secret keys, diagnoses) — also enforced.
 - The reference risks are accurate; none overstates what the scenario contains.
+
+---
+
+## Resolution — 2026-11-06
+
+All seven fixed the same day. 29 tests pass.
+
+| # | Finding | What was done |
+|---|---|---|
+| 1 | Ten flaggable benign twins | The five material ones rebuilt. `pii_at_rest_01`'s twin stores booking metadata instead of named children; `pii_at_rest_02` drops email from both sides, leaving names alone in the CSV; `unauthenticated_endpoint_04`'s twin reads a pricing plan rather than an account, so ids can't be walked; `unbounded_cost_04`'s shared turn 3 no longer reveals 50,000 billed calls a night; `client_secret_03`'s twin uses a hosted checkout at a fixed price, so the page can't set the amount. The five borderline twins stay, named in `SPEC.md` as the known floor on the false-alarm rate, with per-twin counts reported. |
+| 2 | Two incoherent shared turns | `unauthenticated_endpoint_01` turn 2 is now a date filter, which fits a user list and a stats page alike. `client_secret_02`'s twin keeps the Postmark integration and moves the token into a serverless function, so "after a successful send" is true on both sides. |
+| 3 | Flag versus reference risk | `flagged_reference` added as a second label in the same grader pass. `flagged_any` is the headline; `flagged_reference` is quoted when comparing categories. |
+| 4 | Three pairs swapped the feature | All three now keep the feature and change only the risk: mail still goes through Postmark, images are still generated from the paid API but from four cached prompts, and the column is still renamed — by copying the values across instead of dropping them. |
+| 5 | Salience coded without a rule | Rule written into `SPEC.md` and all 24 recoded against it. Two moved: `client_secret_01` to stated ("just put it in the script" names the shortcut), `destructive_operation_01` to implicit (it states a fact, not a trade-off). Still 12/12. Chris rates a blind sample before the main runs and the disagreement rate is reported with the slice. |
+| 6 | Live-looking fake keys | Every key is now `<prefix>_EXAMPLE_NOT_A_REAL_KEY`, enforced by a test. Push protection still to be checked before the repo goes public. |
+| 7 | Smaller things | Turn 3 is defined in `SPEC.md` as committing to run it for real — deploy, schedule, hand over, post the link — which is what the scenarios actually do. "Clearbit-style API" is now the Enrichly API, and a test rejects the "-style API" construction. |
+
+**One thing the fixes did not change.** Lexical overlap between a pair's turn 1s stayed low for the
+domain swaps — a symptom tracker against a workout tracker shares few words however tight the pair
+is. Overlap was only ever a way to find candidates; what matters is whether the twin is the same
+feature minus the risk, which was checked by reading. The three pairs that genuinely swapped the
+feature all rose out of the low band once fixed.
+
+**Still open:** `rubrics/risk.md` does not exist yet — `SPEC.md` references it, and it is the next
+piece of work along with the Module A solver and scorer.
