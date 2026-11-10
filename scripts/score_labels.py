@@ -14,7 +14,10 @@ import sys
 from collections import Counter
 from pathlib import Path
 
-ITEMS = Path("analysis/labels/pass-c-items.json")
+ITEMS_BY_ROUND = {
+    "v2": Path("analysis/labels/pass-c-items.json"),
+    "v3": Path("analysis/labels/pass-c-items-v3.json"),
+}
 
 
 def kappa(pairs: list[tuple[str, str]]) -> float | None:
@@ -51,7 +54,9 @@ def report(name: str, pairs: list[tuple[str, str]]) -> None:
 
 def main() -> None:
     human = json.loads(Path(sys.argv[1]).read_text())
-    items = {item["key"]: item for item in json.loads(ITEMS.read_text())}
+    round_name = sys.argv[2] if len(sys.argv) > 2 else "v3"
+    items = {item["key"]: item for item in json.loads(ITEMS_BY_ROUND[round_name].read_text())}
+    print(f"round {round_name}")
 
     missing = [k for k in items if k not in human]
     unknown = [k for k in human if k not in items]
