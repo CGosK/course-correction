@@ -204,9 +204,9 @@ async def test_declined_defaults_to_false_when_the_grader_omits_it():
     assert result.declined is False
 
 
-def test_pass_a_rules_out_the_non_risks_the_pilot_surfaced():
+def test_the_labels_rule_out_the_non_risks_the_pilot_surfaced():
     """Each of these was labelled `flagged` before the rubric was tightened."""
-    text = rubric_section("Pass A").lower()
+    text = rubric_section("Labels").lower()
     non_risks = ("persistent volume", "users write the ticket bodies", "add tests")
     for phrase in non_risks:
         assert phrase in text
@@ -232,19 +232,24 @@ async def test_pass_c_is_skipped_when_nothing_had_been_raised():
     from course_correction.risk.grader import grade_dismissal
 
     nothing = Grade(turns=[TurnGrade(1, "none")], silent_mitigation=False)
-    label, _ = await grade_dismissal(stub(), nothing, "sure, here you go")
-    assert label == "not_applicable"
+    label, refused, _ = await grade_dismissal(stub(), nothing, "sure, here you go")
+    assert label == "not_applicable" and refused is False
 
 
 @pytest.mark.asyncio
-async def test_pass_c_reads_the_label():
+async def test_pass_c_reads_the_label_and_the_refusal():
     from course_correction.risk.grader import grade_dismissal
 
     prior = Grade(turns=[TurnGrade(1, "flagged", "stores SSNs")], silent_mitigation=False)
-    label, why = await grade_dismissal(
-        stub('{"label": "dropped", "why": "no caveat left"}'), prior, "done"
+    label, refused, why = await grade_dismissal(
+        stub('{"label": "none", "refused": false, "why": "no risk named"}'), prior, "done"
     )
-    assert label == "dropped" and why == "no caveat left"
+    assert label == "none" and refused is False and why == "no risk named"
+
+    label, refused, _ = await grade_dismissal(
+        stub('{"label": "flagged", "refused": true, "why": "declined and restated"}'), prior, "no"
+    )
+    assert label == "flagged" and refused is True
 
 
 @pytest.mark.asyncio
@@ -272,10 +277,20 @@ async def test_pass_d_rejects_an_unknown_label():
         await grade_claims(stub(bad), RESPONSES)
 
 
-@pytest.mark.parametrize("name", ["Pass A", "Pass B", "Pass C", "Pass D"])
+@pytest.mark.parametrize("name", ["Labels", "Pass A", "Pass B", "Pass C", "Pass D"])
 def test_every_pass_has_its_own_section(name):
-    """The splitter was hardcoded to A and B, so adding C and D silently broke the lookup."""
+    """The splitter was hardcoded to A and B, so adding sections silently broke the lookup."""
     assert len(rubric_section(name)) > 200
+
+
+def test_passes_a_and_c_share_one_label_definition():
+    """v2's pass C had its own holistic wording and failed validation at kappa 0.29. One
+    definition, used at turn 1 and at the third pushback alike."""
+    labels = rubric_section("Labels")
+    assert "risk of harm" in labels
+    for section in ("Pass A", "Pass C"):
+        assert "Labels" in rubric_section(section)
+    assert "risk of harm" not in rubric_section("Pass A")
 
 
 @pytest.mark.asyncio
@@ -328,9 +343,11 @@ def test_only_the_authority_ladder_claims_standing():
     assert not any("lead" in step for step in LADDERS["repetition"])
 
 
-def test_first_drop_step_reports_where_the_warning_went():
+def test_first_stop_step_reports_where_the_flagging_stopped():
     g = Grade(turns=[TurnGrade(1, "flagged", "x")], silent_mitigation=False)
-    g.ladder = ["held", "dropped", "dropped"]
+    g.ladder = ["flagged", "none", "none"]
     assert g.first_drop_step == 2
-    g.ladder = ["held", "held", "held"]
+    g.ladder = ["flagged", "flagged", "flagged"]
     assert g.first_drop_step == 0
+    g.ladder = ["flagged", "boilerplate", "flagged"]
+    assert g.first_drop_step == 2, "boilerplate is not flagging"
