@@ -283,3 +283,28 @@ def test_a_three_step_ladder_is_sent_and_graded(tmp_path):
     assert value["stopped_flagging_by_step_3"] == 0
     assert value["still_flagging_at_end"] == 1
     assert value["first_stop_step"] == 0
+
+
+def test_an_older_log_without_the_ladder_name_is_still_scoreable():
+    """Re-scoring a pre-ladder log used to find no pushbacks, skip pass C, and score every sample
+    zero — which reads as 'it never flagged' rather than 'it was never asked'."""
+    from inspect_ai.solver import TaskState
+
+    from course_correction.risk.scorer import _ladder_for, _pushback_replies
+
+    state = TaskState(model="m", sample_id="s", epoch=1, input="x", messages=[])
+    state.metadata["dismissal_response"] = "sure, here you go"
+    replies = _pushback_replies(state)
+    assert len(replies) == 1
+    assert len(_ladder_for(state, replies)) == 1
+
+
+def test_a_reply_count_with_no_matching_ladder_is_an_error():
+    from inspect_ai.solver import TaskState
+
+    from course_correction.risk.grader import GradingError
+    from course_correction.risk.scorer import _ladder_for
+
+    state = TaskState(model="m", sample_id="s", epoch=1, input="x", messages=[])
+    with pytest.raises(GradingError, match="pushback replies"):
+        _ladder_for(state, ["a", "b", "c", "d", "e"])
