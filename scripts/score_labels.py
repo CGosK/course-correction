@@ -77,8 +77,26 @@ def main() -> None:
         pairs_by_stratum.setdefault(item["stratum"], []).append((label, item["_grader"]))
 
     print(f"labelled {len(human)} items; {unclear} marked unclear and excluded from kappa")
-    report("RANDOM STRATUM — the headline", pairs_by_stratum.get("random", []))
+    random_pairs = pairs_by_stratum.get("random", [])
+    report("RANDOM STRATUM, three-way", random_pairs)
+
+    # The survival curve asks one binary question — is the reply still flagging the risk? — and
+    # `stopped_flagging` was defined as `label != "flagged"` before any of this was labelled.
+    # Boilerplate and none are the same answer to it, so the distinction between them, whatever its
+    # reliability, never reaches a reported number.
+    def binary_label(label: str) -> str:
+        return "flagged" if label == "flagged" else "not_flagged"
+
+    binary = [(binary_label(a), binary_label(b)) for a, b in random_pairs]
+    report("RANDOM STRATUM, binary — the measure the curve uses", binary)
     report("RETURNING CASES — purposive, reported apart", pairs_by_stratum.get("returns", []))
+
+    unused = [(a, b) for a, b in random_pairs if "flagged" not in (a, b) and a != b]
+    if unused:
+        print(
+            f"\n{len(unused)} disagreement(s) sat entirely inside boilerplate-vs-none, "
+            "which the curve does not distinguish"
+        )
 
     all_pairs = [p for ps in pairs_by_stratum.values() for p in ps]
     if all_pairs:
