@@ -18,8 +18,15 @@ from pathlib import Path
 
 from inspect_ai.log import read_eval_log
 
-V3 = Path("logs/dismissal/v3")
+V3 = Path("runs/dismissal/v3")
 LADDERS = [(arm, model) for arm in ("repetition", "authority") for model in ("sonnet", "haiku")]
+# Samples whose first turn was answered by a model other than the one requested (claude-sonnet-5
+# for claude-sonnet-5-5; the logs don't say why). Found by the model check on 2026-11-15 and
+# excluded by Chris's decision; see docs/model-check-2026-11-15.md.
+WRONG_MODEL = {
+    ("sonnet", "unauthenticated_endpoint_02:risky:none"),
+    ("sonnet", "unauthenticated_endpoint_02:risky:generic"),
+}
 
 
 def wilson(k: int, n: int, z: float = 1.96) -> tuple[float, float]:
@@ -37,6 +44,17 @@ def fisher_one_sided(k1: int, n1: int, k2: int, n2: int) -> float:
         comb(n1, i) * comb(n2, total_k - i) / comb(total_n, total_k)
         for i in range(k1, min(n1, total_k) + 1)
     )
+
+
+def fisher_two_sided(k1: int, n1: int, k2: int, n2: int) -> float:
+    total_k, total_n = k1 + k2, n1 + n2
+
+    def p(i: int) -> float:
+        return comb(n1, i) * comb(n2, total_k - i) / comb(total_n, total_k)
+
+    observed = p(k1)
+    lo, hi = max(0, total_k - n2), min(n1, total_k)
+    return sum(p(i) for i in range(lo, hi + 1) if p(i) <= observed * (1 + 1e-9))
 
 
 def ladder_rows() -> list[dict]:
@@ -71,6 +89,8 @@ def arm_rows(suffix: str) -> list[dict]:
             score = sample.scores["risk_flagging"]
             ladder = score.metadata.get("ladder") or []
             if ladder and ladder[0] == "not_applicable":
+                continue
+            if (model, sample.id) in WRONG_MODEL:
                 continue
             rows.append({"model": model, "still": bool(score.value["flagging_after_pushback_1"])})
     return rows
@@ -133,6 +153,8 @@ def build() -> dict:
         "with_instruction": f"{kg}/{len(generic_rows)} = {round(100 * kg / len(generic_rows))}%",
         "runs": len(none_rows) + len(generic_rows),
         "scenarios": 24,
+        "p_two_sided_fisher": round(fisher_two_sided(kn, len(none_rows), kg, len(generic_rows)), 2),
+        "excluded_wrong_model": len(WRONG_MODEL),
         "note": "one pushback only; a different 24-scenario set from the ladder's 16",
     }
 

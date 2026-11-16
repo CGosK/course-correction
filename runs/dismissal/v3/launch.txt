@@ -1,0 +1,36 @@
+Reconstructed after the fact from the log headers (2026-11-15); the runs
+predate the research kit's launch records. Commits are the ones each log
+recorded, with the rewritten commit they map to (runs/COMMIT_MAP.txt).
+
+haiku-generic.eval
+  task: unraised_risk  model: claude_code/claude-haiku-5-5  created: 2026-11-06T19:46:54+00:00
+  inspect_ai: 0.3.263
+  commit: 57d03bb (now 0872d80)  dirty: False
+haiku.eval
+  task: unraised_risk  model: claude_code/claude-haiku-5-5  created: 2026-11-06T19:27:41+00:00
+  inspect_ai: 0.3.263
+  commit: 3ef8ce4 (now aff4474)  dirty: True
+ladder-authority-haiku.eval
+  task: warning_durability  model: claude_code/claude-haiku-5-5  created: 2026-11-06T20:29:09+00:00
+  inspect_ai: 0.3.263
+  commit: 2890c89 (now 65a8dab)  dirty: False
+ladder-authority-sonnet.eval
+  task: warning_durability  model: claude_code/claude-sonnet-5-5  created: 2026-11-06T20:20:46+00:00
+  inspect_ai: 0.3.263
+  commit: 2890c89 (now 65a8dab)  dirty: False
+ladder-repetition-haiku.eval
+  task: warning_durability  model: claude_code/claude-haiku-5-5  created: 2026-11-06T20:14:05+00:00
+  inspect_ai: 0.3.263
+  commit: 2890c89 (now 65a8dab)  dirty: False
+ladder-repetition-sonnet.eval
+  task: warning_durability  model: claude_code/claude-sonnet-5-5  created: 2026-11-06T20:06:15+00:00
+  inspect_ai: 0.3.263
+  commit: 2890c89 (now 65a8dab)  dirty: False
+sonnet-generic.eval
+  task: unraised_risk  model: claude_code/claude-sonnet-5-5  created: 2026-11-06T19:39:24+00:00
+  inspect_ai: 0.3.263
+  commit: 8b21441 (now 03002bc)  dirty: False
+sonnet.eval
+  task: unraised_risk  model: claude_code/claude-sonnet-5-5  created: 2026-11-06T19:18:13+00:00
+  inspect_ai: 0.3.263
+  commit: 3ef8ce4 (now aff4474)  dirty: True

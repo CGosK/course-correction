@@ -1,8 +1,11 @@
 # Project Context — Course Correction
 
-**Owner:** Chris Graham · **Started:** 2026-09-10 · **Status:** Phase 1 (spec awaiting sign-off; model access re-verified for subscription 2026-11-05)
+**Owner:** Chris Graham · **Started:** 2026-09-10 · **Status:** Module A done (runs, grader validation, analysis); Chris is writing it up from `writeup/OUTLINE.md`. Module B (stuck loops) is out of this write-up. Repo brought onto the research kit 2026-11-15 (see the change log)
 
 ## How to use this document
+
+Sections 1–6 record decisions as they were made; the status line and the change log (§7) say where things
+stand now.
 
 Standing context for AI collaboration on this project. It records what is decided, what is open, and
 how the work is divided. If it conflicts with the code, the code wins and this document is stale — say
@@ -22,7 +25,7 @@ the evidence comes from?*
 
 | | Module | Shape | Output |
 |---|---|---|---|
-| **A** | Unraised risk | A latent security, privacy, cost or data-loss risk sits in the request. Three instruction arms × two models, plus a dismissal turn. | The headline result |
+| **A** | Unraised risk | A latent security, privacy, cost or data-loss risk sits in the request. Instruction arms × two models, plus a dismissal turn (arms: `SPEC.md`). | The headline result |
 | **B** | Stuck loops | A real failing suite the agent cannot fix. 8 scenarios. | Qualitative appendix |
 
 **Narrowed 2026-11-05.** The MCQ sycophancy module was cut: it needed ~240 questions per cell to
@@ -91,8 +94,8 @@ and every publishing decision. AI writes the code, drafts dataset items for revi
 **No API key.** Model access goes through the Claude Code CLI on Chris's claude.ai subscription
 (`claude auth status` → `authMethod: claude.ai`). Inspect ships **no provider for this** — its
 `anthropic` provider needs `ANTHROPIC_API_KEY`. A local provider
-(`@modelapi("claude_code")` + a `ModelAPI` subclass shelling out to `claude -p`) is required and is
-not yet written.
+(`@modelapi("claude_code")` + a `ModelAPI` subclass shelling out to `claude -p`) is required; it was
+written on 2026-11-06 (`src/course_correction/providers/claude_code.py`).
 
 Verified by probe, all on subscription, no key:
 
@@ -109,8 +112,9 @@ Verified by probe, all on subscription, no key:
 
 **What this costs the eval.** Samples are no longer raw-model measurements: every answer is produced by
 *Claude Code running that model*. M1 results are therefore **not** directly comparable to SycoBench-600,
-and readers can't reproduce them without the same CLI version and a subscription. Mitigations: pin the
-CLI version, ship transcripts, and keep an API-key code path so anyone with a key can rerun.
+and readers can't reproduce them without the same CLI version and a subscription. What was done: the
+transcripts ship in `runs/`; `SPEC.md` records the CLI version in use (2.1.314), though the logs themselves
+don't; no API-key code path was built.
 
 **Module 2 needs a redesign.** A probe with a scripted `run_tests.sh` stub was detected immediately —
 the agent read the script, said it was a fake that always exits 1, and correctly refused to spin. So
@@ -121,9 +125,16 @@ output through Inspect.
 **Budget, restated.** The $75 cap was a dollar figure for API billing and no longer binds. Notional
 list cost at the planned scale is roughly $40–50 total; the real constraints are **subscription usage
 limits** and **wall-clock** (~4s per short turn, ~60s per M2 run → several hours across all modules).
-Open calls for Chris: the model roster, and the usage ceiling he's willing to spend.
+Settled since: the two models above, and every run stayed on the subscription.
 
 ## 7. Change log
+
+- **2026-11-15** — Brought onto Chris's research kit. Commits rewritten to the noreply address (trees
+  unchanged; `runs/COMMIT_MAP.txt`). The 42 logs are now committed in `runs/`, scrubbed of local paths,
+  identities and usage fields, with the raw logs kept in `.private/`; `claims.py` gives byte-identical
+  output from them. A model check found two Sonnet samples answered partly by `claude-sonnet-5`; Chris
+  excluded them (`docs/model-check-2026-11-15.md`). `rkit/` (vendored) adds the leak check and its
+  pre-push hook.
 
 - **2026-09-10** — Created. Plan approved; scope set to three modules and a $75 cap.
 - **2026-11-05** — Scope narrowed to one module plus an appendix (§1), axis changed to instruction

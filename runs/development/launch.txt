@@ -1,0 +1,84 @@
+Reconstructed after the fact from the log headers (2026-11-15); the runs
+predate the research kit's launch records. Commits are the ones each log
+recorded, with the rewritten commit they map to (runs/COMMIT_MAP.txt).
+
+2026-09-10T22-30-07-00-00_hello_GNWvsNisbsfd5mBRxVuQRP.eval
+  task: hello  model: mockllm/model  created: 2026-09-10T22:30:07+00:00
+  inspect_ai: 0.3.263
+  commit: not recorded  dirty: not recorded
+2026-11-06T07-39-41-00-00_hello_YQJC9Vt722pm2ThgxZZZxi.eval
+  task: hello  model: mockllm/model  created: 2026-11-06T07:39:41+00:00
+  inspect_ai: 0.3.263
+  commit: not recorded  dirty: not recorded
+2026-11-06T08-03-35-00-00_smoke-claude-code_T5u74QcxCv2gYazSVwm6t5.eval
+  task: smoke_claude_code  model: claude_code/claude-haiku-5-5  created: 2026-11-06T08:03:35+00:00
+  inspect_ai: 0.3.263
+  commit: not recorded  dirty: not recorded
+2026-11-06T17-30-01-00-00_unraised-risk_mBRr78gizGFTdqP9fLwykj.eval
+  task: unraised_risk  model: claude_code/claude-sonnet-5-5  created: 2026-11-06T17:30:01+00:00
+  inspect_ai: 0.3.263
+  commit: 844ccf1 (now 70f5909)  dirty: True
+2026-11-06T17-34-06-00-00_unraised-risk_DzePWigbkFyRzyVauPeEmG.eval
+  task: unraised_risk  model: claude_code/claude-sonnet-5-5  created: 2026-11-06T17:34:06+00:00
+  inspect_ai: 0.3.263
+  commit: 844ccf1 (now 70f5909)  dirty: True
+2026-11-06T17-43-19-00-00_unraised-risk_dfUnY9Fpw89CyAAzKcmDV5.eval
+  task: unraised_risk  model: claude_code/claude-haiku-5-5  created: 2026-11-06T17:43:19+00:00
+  inspect_ai: 0.3.263
+  commit: cc1a398 (now 751254e)  dirty: False
+2026-11-06T19-00-56-00-00_unraised-risk_ZSKsU2rmNSXryLUbaL24zw.eval
+  task: unraised_risk  model: claude_code/claude-sonnet-5-5  created: 2026-11-06T19:00:56+00:00
+  inspect_ai: 0.3.263
+  commit: c742fcc (now 90b69bf)  dirty: True
+2026-11-06T19-10-09-00-00_unraised-risk_EcDhi58TKvaQktSJVTVTpQ.eval
+  task: unraised_risk  model: claude_code/claude-sonnet-5-5  created: 2026-11-06T19:10:09+00:00
+  inspect_ai: 0.3.263
+  commit: 693e0dd (now dcf7c41)  dirty: True
+2026-11-06T19-10-49-00-00_unraised-risk_m5FVNxt6v5awqfLY8jK5Bj.eval
+  task: unraised_risk  model: claude_code/claude-sonnet-5-5  created: 2026-11-06T19:10:49+00:00
+  inspect_ai: 0.3.263
+  commit: 693e0dd (now dcf7c41)  dirty: True
+2026-11-06T19-12-23-00-00_unraised-risk_JnWeK7twWYrREWbandCxbd.eval
+  task: unraised_risk  model: claude_code/claude-sonnet-5-5  created: 2026-11-06T19:12:23+00:00
+  inspect_ai: 0.3.263
+  commit: 693e0dd (now dcf7c41)  dirty: True
+2026-11-06T19-18-13-00-00_unraised-risk_a7DU7BK33PqBkyYRSQDvQY.eval
+  task: unraised_risk  model: claude_code/claude-sonnet-5-5  created: 2026-11-06T19:18:13+00:00
+  inspect_ai: 0.3.263
+  commit: 3ef8ce4 (now aff4474)  dirty: True
+2026-11-06T19-27-41-00-00_unraised-risk_S5iapVtPpSFeq6vieqddWo.eval
+  task: unraised_risk  model: claude_code/claude-haiku-5-5  created: 2026-11-06T19:27:41+00:00
+  inspect_ai: 0.3.263
+  commit: 3ef8ce4 (now aff4474)  dirty: True
+2026-11-06T19-39-24-00-00_unraised-risk_Qr43pRXXkWe2ruAiSiE8Yg.eval
+  task: unraised_risk  model: claude_code/claude-sonnet-5-5  created: 2026-11-06T19:39:24+00:00
+  inspect_ai: 0.3.263
+  commit: 8b21441 (now 03002bc)  dirty: False
+2026-11-06T19-46-54-00-00_unraised-risk_78UZRCffuyoK3iC7P3zksi.eval
+  task: unraised_risk  model: claude_code/claude-haiku-5-5  created: 2026-11-06T19:46:54+00:00
+  inspect_ai: 0.3.263
+  commit: 57d03bb (now 0872d80)  dirty: False
+2026-11-06T19-49-20-00-00_warning-durability_fim4u6sD6op8XVmcJ9yvrX.eval
+  task: warning_durability  model: claude_code/claude-sonnet-5-5  created: 2026-11-06T19:49:20+00:00
+  inspect_ai: 0.3.263
+  commit: 3970b6b (now 967e505)  dirty: False
+2026-11-06T19-54-51-00-00_warning-durability_SypVNX3t3ai3HbcbtasjGc.eval
+  task: warning_durability  model: claude_code/claude-haiku-5-5  created: 2026-11-06T19:54:51+00:00
+  inspect_ai: 0.3.263
+  commit: 3970b6b (now 967e505)  dirty: False
+2026-11-06T20-06-15-00-00_warning-durability_N3MJoNWsjwfFcZjAfyrST8.eval
+  task: warning_durability  model: claude_code/claude-sonnet-5-5  created: 2026-11-06T20:06:15+00:00
+  inspect_ai: 0.3.263
+  commit: 2890c89 (now 65a8dab)  dirty: False
+2026-11-06T20-14-05-00-00_warning-durability_gE27mUoJAHRUqe5ATqS9XQ.eval
+  task: warning_durability  model: claude_code/claude-haiku-5-5  created: 2026-11-06T20:14:05+00:00
+  inspect_ai: 0.3.263
+  commit: 2890c89 (now 65a8dab)  dirty: False
+2026-11-06T20-20-46-00-00_warning-durability_f55zHnkPh9GprbJsKQ6F5k.eval
+  task: warning_durability  model: claude_code/claude-sonnet-5-5  created: 2026-11-06T20:20:46+00:00
+  inspect_ai: 0.3.263
+  commit: 2890c89 (now 65a8dab)  dirty: False
+2026-11-06T20-29-09-00-00_warning-durability_aP5RHbez48sPf57Natiiao.eval
+  task: warning_durability  model: claude_code/claude-haiku-5-5  created: 2026-11-06T20:29:09+00:00
+  inspect_ai: 0.3.263
+  commit: 2890c89 (now 65a8dab)  dirty: False

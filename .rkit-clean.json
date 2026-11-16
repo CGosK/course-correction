@@ -1,0 +1,89 @@
+{
+  "allowed_email_domains": [],
+  "allowed_people": [],
+  "allow": [
+    {
+      "path": "analysis/labels/pass-c-items.json",
+      "label": "temp path",
+      "reason": "the agent's own sandbox temp paths, quoted in the hand-label items; changing them would alter the grader-validation data"
+    },
+    {
+      "path": "analysis/labels/pass-c-items-v3.json",
+      "label": "temp path",
+      "reason": "as above, for the v3 label items"
+    },
+    {
+      "path": "analysis/labels/pass-c-items.json",
+      "label": "home path",
+      "match": "/Users/YOUR_USERNAME",
+      "reason": "placeholder path the agent wrote in example code"
+    },
+    {
+      "path": "runs/**/*.eval",
+      "label": "home path",
+      "match": "/Users/YOUR_USERNAME",
+      "reason": "placeholder path the agent wrote in example code"
+    },
+    {
+      "path": "runs/**/*.eval",
+      "label": "home path",
+      "match": "/Users/you",
+      "reason": "placeholder path the agent wrote in example code"
+    },
+    {
+      "path": "runs/**/*.eval",
+      "label": "home path",
+      "match": "/Users/YOU",
+      "reason": "placeholder path the agent wrote in example code"
+    },
+    {
+      "path": "runs/**/*.eval",
+      "label": "home path",
+      "match": "/home/you",
+      "reason": "placeholder path the agent wrote in example code"
+    },
+    {
+      "path": "runs/**/*.eval",
+      "label": "home path",
+      "match": "/home/deploy",
+      "reason": "placeholder path the agent wrote in example code"
+    },
+    {
+      "path": "runs/**/*.eval",
+      "label": "home path",
+      "match": "/home/tutor",
+      "reason": "placeholder path the agent wrote in example code"
+    },
+    {
+      "path": "runs/development/2026-11-06T17-30-01-00-00_unraised-risk_mBRr78gizGFTdqP9fLwykj.eval",
+      "label": "email",
+      "match": "a@b.co",
+      "reason": "fake form data the agent used in a curl test"
+    },
+    {
+      "path": "tests/test_claude_code_provider.py",
+      "label": "token or cost counts",
+      "reason": "fixture CLI output the provider tests parse"
+    },
+    {
+      "path": "src/course_correction/providers/claude_code.py",
+      "label": "token or cost counts",
+      "reason": "the provider parses Claude Code's usage fields"
+    },
+    {
+      "path": "scripts/migrate_logs.py",
+      "label": "token or cost counts",
+      "reason": "names the usage fields it removes from the logs"
+    },
+    {
+      "path": "CONTEXT.md",
+      "label": "token or cost counts",
+      "reason": "names Claude Code's output fields in prose (\u00a76)"
+    },
+    {
+      "path": "docs/model-check-2026-11-15.md",
+      "label": "token or cost counts",
+      "reason": "names the per-model usage field the check reads, in prose"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+Reconstructed after the fact from the log headers (2026-11-15); the runs
+predate the research kit's launch records. Commits are the ones each log
+recorded, with the rewritten commit they map to (runs/COMMIT_MAP.txt).
+
+2026-11-06T17-34-06-00-00_unraised-risk_DzePWigbkFyRzyVauPeEmG.eval
+  task: unraised_risk  model: claude_code/claude-sonnet-5-5  created: 2026-11-06T17:34:06+00:00
+  inspect_ai: 0.3.263
+  commit: 844ccf1 (now 70f5909)  dirty: True
+2026-11-06T17-43-19-00-00_unraised-risk_dfUnY9Fpw89CyAAzKcmDV5.eval
+  task: unraised_risk  model: claude_code/claude-haiku-5-5  created: 2026-11-06T17:43:19+00:00
+  inspect_ai: 0.3.263
+  commit: cc1a398 (now 751254e)  dirty: False

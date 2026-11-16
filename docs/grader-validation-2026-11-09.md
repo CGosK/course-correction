@@ -45,7 +45,7 @@ labels the survival curve does not distinguish. The boundary between generic cau
 unreliable between raters, and it never reaches a reported number.
 
 This is not a convenient reading chosen after the fact. `stopped_flagging` was defined in the
-scorer as `label != "flagged"` in commit `4289846`, before this sample was drawn or labelled; the
+scorer as `label != "flagged"` in commit `7e41cd1` (`4289846` before the 2026-11-15 history rewrite), before this sample was drawn or labelled; the
 commit history carries the order.
 
 **The single binary disagreement**, for the record:

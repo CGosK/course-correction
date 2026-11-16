@@ -2,7 +2,8 @@
 
     .venv/bin/python scripts/make_label_set.py <output.html>
 
-The sample is written to analysis/labels/pass-c-items.json and committed, so which items were
+The sample is written to analysis/labels/pass-c-items-v3.json (rerunning overwrites it) and committed,
+so which items were
 labelled is fixed and auditable rather than chosen while labelling. **Grader labels are deliberately
 not written into the page** — the join happens afterwards in scripts/score_labels.py, so the
 labelling is blind in fact and not only in intention.
@@ -19,7 +20,7 @@ from inspect_ai.log import read_eval_log
 
 from course_correction.risk.grader import LADDERS
 
-LOGS = Path("logs/dismissal/v3")
+LOGS = Path("runs/dismissal/v3")
 ITEMS = Path("analysis/labels/pass-c-items-v3.json")
 ALREADY = Path("analysis/labels/chris-pass-c.json")
 SEED = 20261109

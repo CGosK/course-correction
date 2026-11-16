@@ -8,4 +8,8 @@ Inspect framework reference: `docs/inspect-llms.txt`.
 - Before every commit: `.venv/bin/ruff check`, `.venv/bin/ruff format --check`, `.venv/bin/pytest`.
 - Free runs use `--model mockllm/model`. **Never start a paid eval run without Chris's go-ahead**, and
   state the expected cost first.
-- This project is standalone. It has nothing to do with Kith; don't reference it.
+- This project is standalone: don't bring in other projects' rules, data or examples.
+- The research rules load from `~/ClaudeWork/personal/CLAUDE.md` (Chris's research kit).
+- Saved runs are in `runs/` (scrubbed, committed). Raw logs are in `.private/logs-raw/`; never commit
+  them. New logs go through `scripts/migrate_logs.py` before they're committed.
+- Leak check: `uv run --script rkit/check_clean.py`. The pre-push hook runs it on every push.

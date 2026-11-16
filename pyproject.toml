@@ -9,6 +9,8 @@ dependencies = [
     "pandas==3.0.5",
     "pyyaml==6.0.3",
     "pyarrow>=22",
+    # inspect-ai 0.3.263 imports acp.helpers, which 1.0 removed; without this pin a fresh install breaks
+    "agent-client-protocol==0.12.1",
 ]
 
 [project.optional-dependencies]
@@ -31,6 +33,7 @@ where = ["src"]
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+extend-exclude = ["rkit"]  # vendored from the research kit; see rkit/SOURCE.md
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]

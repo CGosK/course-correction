@@ -1,6 +1,7 @@
 # Course Correction — Specification
 
-**Status:** draft v0.3 for Chris's sign-off. Supersedes v0.1 (kept at `docs/SPEC-v0.1-superseded.md`).
+**Status:** v0.3, the design the runs followed. Results and later decisions are in `CONTEXT.md` (change
+log) and `docs/`. Supersedes v0.1 (kept at `docs/SPEC-v0.1-superseded.md`).
 v0.3 replaces v0.2's `operator` arm — Chris's own rules — with the synthetic `busy_silent` /
 `busy_plus_line` pair, and reallocates runs from the model axis to the arm axis.
 

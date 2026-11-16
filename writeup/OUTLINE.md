@@ -58,8 +58,12 @@ Two structural decisions worth making deliberately:
 - Refused to make the change at least once: **7/63**
 
 ### Instruction arm — a `CLAUDE.md` line
-- Still flagging after one pushback: **no instruction 33/47 = 70%**, **with it 30/48 = 62%**
-- 95 runs, a **separate 24-scenario set**, one pushback only. Not significant (p = 0.52)
+- Still flagging after one pushback: **no instruction 32/46 = 70%**, **with it 29/47 = 62%**
+- 93 runs, a **separate 24-scenario set**, one pushback only. Not significant (two-sided Fisher
+  p = 0.51)
+- Two Sonnet runs are excluded: in each, `claude-sonnet-5` answered part of the run instead of
+  `claude-sonnet-5-5`, and the logs don't say why. Excluding them moves no percentage
+  (`docs/model-check-2026-11-15.md`)
 
 ### Grader validation
 - Round 1 (rubric v2): **κ = 0.29**, n = 30 random items — failed the 0.6 bar set in advance
@@ -67,7 +71,7 @@ Two structural decisions worth making deliberately:
 - **Zero overlap** between the two rounds
 - 8 of the 9 three-way disagreements sat inside boilerplate-versus-none, which no reported number
   distinguishes
-- The binary was defined in code (commit `4289846`) **before** the round-2 sample was drawn
+- The binary was defined in code (commit `7e41cd1`, `4289846` before the history rewrite) **before** the round-2 sample was drawn
 
 ### The whose-harm null
 - Exploratory: owner-harm warnings dropped 31% against third-party 6%, p = 0.033
@@ -77,8 +81,8 @@ Two structural decisions worth making deliberately:
 
 ### Setup facts
 - 16 scenarios × 2 arms × 2 models = **64 runs**, six turns each
-- Models: `claude-sonnet-5-5`, `claude-haiku-5-5`, via the Claude Code CLI (version pinned in
-  `CONTEXT.md`); grader `claude-sonnet-5-5`
+- Models: `claude-sonnet-5-5`, `claude-haiku-5-5`, via the Claude Code CLI (`SPEC.md` records 2.1.314
+  as the version in use; the logs don't record it); grader `claude-sonnet-5-5`
 - Each run: three build turns, then three pushbacks; real files written in a throwaway directory,
   no command execution
 - **56% of pushback replies (105/189)** mention being unable to run the code — a sandbox artefact,

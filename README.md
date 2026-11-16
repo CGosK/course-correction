@@ -1,61 +1,100 @@
 # Course Correction
 
-When a coding agent builds something with a problem in it, does it tell you — and can you make it?
+Chris Graham · independent research · November 2026
 
-An [Inspect](https://inspect.aisi.org.uk/) eval in two parts:
+**Write-up:** in progress (a LessWrong post).
 
-- **Module A — unraised risk.** 24 scenario pairs. Each asks a coding agent to build something over
-  three turns; the risky side carries a security, privacy, cost or data-loss problem the user never
-  mentions, and the benign twin is the same request with that problem removed. Four instruction arms,
-  delivered the way people really deliver rules — as a `CLAUDE.md` in the working directory: none, one
-  risk line, a realistic project file that never mentions risk, and that same file plus the line.
-- **Module B — stuck loops.** A short qualitative appendix: real failing test suites the agent cannot
-  fix, and what it does with the time.
+When a coding agent builds something with a security, privacy, cost or data-loss problem the user never
+mentioned, it usually raises the problem unprompted, then drops it under ordinary pushback. Across 63
+analysed runs of Claude Sonnet 5.5 and Haiku 5.5 in Claude Code, 49% were still raising the risk after
+one pushback, 19% after two and 5% after three. Claiming authority made no detectable difference
+compared with simply repeating the request (a pre-registered null, one-sided Fisher p = 0.512). A one-line `CLAUDE.md`
+instruction to raise risks didn't measurably help either: 62% still flagging after one pushback with it,
+70% without (p = 0.51).
 
-Definitions and metrics: [`SPEC.md`](SPEC.md). Standing context and decisions: [`CONTEXT.md`](CONTEXT.md).
+## What predates this project
 
-**Status:** provider and scenarios built; spec awaiting sign-off; no main runs yet.
+Nothing from earlier projects. The eval is built on UK AISI's [Inspect](https://inspect.aisi.org.uk/)
+(a dependency). `scripts/hello.py` is Inspect's hello-world example, used as a first wiring check.
+`docs/inspect-llms.txt` is a copy of Inspect's `llms.txt` documentation, kept as a reference; its
+licence is to be confirmed before the repo goes public. `rkit/` is copied from the author's own research
+kit (see `rkit/SOURCE.md`).
 
-## Model access
-
-There is no API key. Models are reached through the **Claude Code CLI on a claude.ai subscription**,
-via a provider in `src/course_correction/providers/claude_code.py`, so model strings look like
-`claude_code/claude-sonnet-5-5`. It registers through an `inspect_ai` entry point, because the CLI
-resolves the model before it loads the task file.
-
-This means results describe *Claude Code running a model*, not the model on its own: every call also
-carries Claude Code's own system prompt and tool schemas. For Module A that is the point — it is the
-setting the question is about — but it makes the numbers incomparable with any API-based result.
-`CONTEXT.md` §6 has the detail.
-
-## Setup
+## Reproduce the numbers
 
 ```bash
 uv venv --python 3.12
 uv pip install --python .venv/bin/python -e ".[dev]"
+.venv/bin/python scripts/claims.py            # add --json for machine-readable output
 ```
+
+| Numbers | Script | Reads |
+|---|---|---|
+| The pushback curve, hazard by step, authority against repetition, the instruction arm | `scripts/claims.py` | `runs/dismissal/v3/` |
+| Grader validation (κ) and the whose-harm null | recorded in `docs/grader-validation-2026-11-09.md` and `docs/durability-result-2026-11-06.md`, carried into `claims.py` | |
+| The blind label set and agreement | `scripts/make_label_set.py`, `scripts/score_labels.py` | `runs/dismissal/v3/`, `analysis/labels/` |
+
+These make no model calls.
+
+## Rerun the experiments
+
+There is no API key. Models are reached through the Claude Code CLI on a Claude subscription, via the
+local Inspect provider in `src/course_correction/providers/claude_code.py`, so model names look like
+`claude_code/claude-sonnet-5-5`. Results therefore describe Claude Code running a model, not the model on
+its own: every call carries Claude Code's system prompt and tool schemas (`CONTEXT.md` §6). The runs used
+`claude_code/claude-sonnet-5-5` and `claude_code/claude-haiku-5-5`; the tasks are in
+`src/course_correction/`.
+
+Before rerunning, note that the provider doesn't yet choose the login (set `CLAUDE_CONFIG_DIR` to the
+account you mean to use) and has no usage guard. Free checks run with `--model mockllm/model`.
+
+## Data
+
+`runs/` holds the 42 Inspect logs (`.eval`), committed after a scrub that removed local paths, the
+operator's identities, and every usage and cost field (token counts, Inspect's notional cost, and the
+state-event patches that carry them). Open them with `inspect view --log-dir runs`.
+
+| Folder | Logs | What |
+|---|---|---|
+| `development/` | 20 | smoke tests, pilots and the first runs, under their original names |
+| `dismissal/` | 10 | the dismissal and pushback-ladder runs as first graded |
+| `dismissal/v3/` | 8 | the same runs re-graded under rubric v3; what `claims.py` reads |
+| `rescored/`, `rescored-v3/` | 2 each | re-scored pilot logs |
+
+Each folder's `launch.txt` is reconstructed from the log headers (task, model, time, Inspect version,
+commit, dirty tree). `runs/COMMIT_MAP.txt` maps the commits the logs recorded to this repo's rewritten
+history.
 
 ## Checks
 
 ```bash
 .venv/bin/ruff check . && .venv/bin/ruff format --check . && .venv/bin/pytest -q
+uv run --script rkit/check_clean.py           # the leak check the pre-push hook runs
 ```
 
-27 tests, no API calls. They cover the provider against a stubbed CLI and the invariants the scenario
-set has to hold: pair and category counts, three turns a side, turns 2 and 3 identical across a pair,
-no risky material left in a benign twin, and `busy-plus-line.md` differing from `busy-silent.md` by
-exactly the one line.
+The leak check reads the author's identities from a private file; anyone else runs it with
+`RKIT_IDENTITIES_OPTIONAL=1`.
 
-## Running things
+## Notes
 
-```bash
-.venv/bin/inspect eval scripts/smoke_claude_code.py --model claude_code/claude-haiku-5-5
-```
+Working notes are in `CONTEXT.md`, `SPEC.md` and `docs/`; where they disagree with the write-up, the
+write-up is current. From the audit on 2026-11-15:
 
-Four calls. Checks that a session resumes across turns and that a per-sample `CLAUDE.md` is read.
+- Two Sonnet samples are excluded: `claude-sonnet-5` answered part of each instead of
+  `claude-sonnet-5-5`, and the logs don't say why (`docs/model-check-2026-11-15.md`).
+- 1,924 of 5,511 model events, mostly grader calls, recorded no usage, so which model answered them
+  can't be checked. The check itself ran on the raw logs; the committed logs have the usage fields
+  removed, so it can't be redone from them.
+- In 6 analysed samples the agent wrote the operator's real email address, which it found in its
+  environment; the committed logs replace it with `<user-email>`.
 
-```bash
-.venv/bin/python scripts/render_scenarios.py scenarios-review.html
-```
+## How this was made
 
-Renders the scenario pairs as a review page. Edit `data/risk/scenarios.yaml`, never the HTML.
+Claude Code (Claude Opus 5; Opus 5.5 for the November 15 clean-up) wrote the code, the scenarios and
+these documents under my direction. I chose the question, approved the design and every scenario pair,
+made the blind hand labels that validate the grader, and decided what to cut and what to exclude. The
+grader is Claude Sonnet 5.5, validated against those labels (`docs/grader-validation-2026-11-09.md`). The
+write-up is my own; an AI-written draft that was in this repo for a short time (removed in the next
+commit) is not it.
+
+Licence: MIT.
