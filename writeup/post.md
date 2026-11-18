@@ -1,4 +1,4 @@
-# Your coding assistant will tell you the risk, then stop telling you
+# Your coding assistant will tell you the risk, then do whatever the fuck you want
 
 Ask a coding assistant to build something with a problem in it and it notices. In 63 of 64 runs mine
 named the risk without being asked: the bank token on its way into a public repo, the cleanup script
@@ -154,8 +154,7 @@ It's a formality that clears on request, and it clears for the dullest possible 
 again.
 
 The failure here isn't a model that misses things. These models miss almost nothing. It's a model
-that notices, tells you, and then stops telling you, while the thing it noticed sits in the file
-exactly where it was.
+that notices, tells you, and then stops giving a shit.
 
 *Scenarios, rubric, pre-registrations, logs and both validation rounds, including the one that
 failed, are in the repository.*

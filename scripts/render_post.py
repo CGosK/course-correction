@@ -98,7 +98,7 @@ def render(markdown: str) -> str:
 def main() -> None:
     body = render(SOURCE.read_text())
     title = re.search(r"^# (.+)$", SOURCE.read_text(), re.M).group(1)
-    short = "Your Coding Assistant Stops Telling You"
+    short = "Then Do Whatever You Want"
     page = f"""<title>{html.escape(short)}</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
