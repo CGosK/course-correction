@@ -43,6 +43,7 @@ select = ["E", "F", "I", "UP", "B"]
 "scripts/render_scenarios.py" = ["E501"]
 "scripts/make_label_set.py" = ["E501"]
 "scripts/claims.py" = ["E501"]
+"scripts/render_post.py" = ["E501"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
