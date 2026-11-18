@@ -16,9 +16,8 @@ instruction to raise risks didn't measurably help either: 62% still flagging aft
 
 Nothing from earlier projects. The eval is built on UK AISI's [Inspect](https://inspect.aisi.org.uk/)
 (a dependency). `scripts/hello.py` is Inspect's hello-world example, used as a first wiring check.
-`docs/inspect-llms.txt` is a copy of Inspect's `llms.txt` documentation, kept as a reference; its
-licence is to be confirmed before the repo goes public. `rkit/` is copied from the author's own research
-kit (see `rkit/SOURCE.md`).
+`rkit/` is copied from my own research kit (see `rkit/SOURCE.md`). Inspect's documentation was read
+from https://inspect.aisi.org.uk/llms.txt rather than copied in.
 
 ## Reproduce the numbers
 
@@ -88,13 +87,22 @@ write-up is current. From the audit on 2026-11-15:
 - In 6 analysed samples the agent wrote the operator's real email address, which it found in its
   environment; the committed logs replace it with `<user-email>`.
 
-## How this was made
+## How this was made, including the write-up
 
-Claude Code (Claude Opus 5; Opus 5.5 for the November 15 clean-up) wrote the code, the scenarios and
-these documents under my direction. I chose the question, approved the design and every scenario pair,
-made the blind hand labels that validate the grader, and decided what to cut and what to exclude. The
-grader is Claude Sonnet 5.5, validated against those labels (`docs/grader-validation-2026-11-09.md`). The
-write-up is my own; an AI-written draft that was in this repo for a short time (removed in the next
-commit) is not it.
+Claude Code wrote nearly all of it: the eval code, the scenarios, these documents, the
+pre-registrations, and the post in `writeup/post.md`. Claude Opus 5 did the work, with Opus 5.5 for
+the November 15 clean-up. The grader is Claude Sonnet 5.5. The reviews that found the problems fixed
+in `3fbf0f6` were run by Claude subagents reading the repository cold.
+
+The post was drafted by Claude against a voice guide built from my own published writing, and I
+edited it: the title, the closing line, which of two figures leads the opening, and the softening of
+two headings that had stated a null as a demonstrated effect. An earlier AI draft, written without
+the voice guide, was removed from the repository and is in git history.
+
+What is mine: the question, the design, approval of every scenario pair after a severity review that
+sent two of them back, the blind hand labels that validate the grader and that failed it the first
+time, the decision to exclude the two wrong-model samples, and every call about what to cut, what to
+claim and what to leave alone. The numbers are computed by `scripts/claims.py` from the logs in
+`runs/`, so you do not have to take my word or Claude's for any of them.
 
 Licence: MIT.

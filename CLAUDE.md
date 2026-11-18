@@ -1,7 +1,7 @@
 # CLAUDE.md
 
 Read `CONTEXT.md` before doing any work here, and `SPEC.md` before touching data, solvers or scorers.
-Inspect framework reference: `docs/inspect-llms.txt`.
+Inspect framework reference: https://inspect.aisi.org.uk/llms.txt
 
 - Python is `.venv/bin/python` (3.12). Never bare `python3` — it resolves to a dead 3.5 on this machine. If `.venv` is missing or broken, rebuild it with uv
   as in the README; `/usr/local/bin/python3.12` is an Intel build and won't run here.
