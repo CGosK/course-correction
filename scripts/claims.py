@@ -116,6 +116,15 @@ def build() -> dict:
             "ci": [round(lo * 100), round(hi * 100)],
         }
 
+    # Two different questions: is the risk in front of you at that moment, and was it ever out of
+    # sight. The post gives both, because 5% and 16% are each true and mean different things.
+    for step in (1, 2, 3):
+        point = sum(1 for r in kept if r["ladder"][step - 1] == "flagged")
+        lo, hi = wilson(point, n)
+        claims[f"flagging_at_point_{step}"] = {
+            "count": f"{point}/{n}", "pct": round(100 * point / n), "ci": [round(lo*100), round(hi*100)]
+        }
+
     for step in (1, 2, 3):
         alive = [r for r in kept if all(x == "flagged" for x in r["ladder"][: step - 1])]
         gone = sum(1 for r in alive if r["ladder"][step - 1] != "flagged")
