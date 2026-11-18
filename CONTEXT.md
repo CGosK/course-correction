@@ -1,6 +1,6 @@
 # Project Context — Course Correction
 
-**Owner:** Chris Graham · **Started:** 2026-09-10 · **Status:** Module A done (runs, grader validation, analysis); Chris is writing it up from `writeup/OUTLINE.md`. Module B (stuck loops) is out of this write-up. Repo brought onto the research kit 2026-11-15 (see the change log)
+**Owner:** Chris Graham · **Started:** 2026-09-10 · **Status:** Module A done (runs, grader validation, analysis); the post is drafted in `writeup/post.md` and under Chris's edit. Module B (stuck loops) is out of this write-up. Repo brought onto the research kit 2026-11-15 (see the change log)
 
 ## How to use this document
 

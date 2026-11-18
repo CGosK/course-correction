@@ -1,6 +1,6 @@
 # Result — whose harm gets dropped, and does an instruction help?
 
-Two measurements, one pre-registered and one not. Logs in `logs/dismissal/`.
+Two measurements, one pre-registered and one not. Logs in `runs/dismissal/`.
 
 ---
 

@@ -1,7 +1,7 @@
 # Does the warning survive being waved off?
 
 24 risky scenarios, no `CLAUDE.md`, Claude Code as it ships. Both models, same scenarios, same
-grader (`claude-sonnet-5-5`), rubric v2. Logs: `logs/dismissal/{sonnet,haiku}.eval`.
+grader (`claude-sonnet-5-5`), rubric v2. Logs: `runs/dismissal/{sonnet,haiku}.eval`.
 
 Every sample is a three-turn build followed by a fourth turn:
 

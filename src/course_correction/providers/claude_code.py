@@ -73,10 +73,6 @@ class ClaudeCodeAPI(ModelAPI):
             api_key_vars=[],
             config=config or GenerateConfig(),
         )
-        if shutil.which(cli) is None:
-            raise ClaudeCodeError(
-                f"'{cli}' is not on PATH; this provider drives the Claude Code CLI"
-            )
         if system_prompt_mode not in ("append", "replace"):
             raise ValueError("system_prompt_mode must be 'append' or 'replace'")
         self.cli = cli
@@ -232,6 +228,12 @@ class ClaudeCodeAPI(ModelAPI):
         return path
 
     async def _run(self, args: list[str], prompt: str, cwd: Path) -> dict[str, Any]:
+        # Checked here rather than in __init__ so the tests, which stub this method out, run on a
+        # machine without Claude Code installed. A fresh clone failed 14 tests on that alone.
+        if shutil.which(self.cli) is None:
+            raise ClaudeCodeError(
+                f"'{self.cli}' is not on PATH; this provider drives the Claude Code CLI"
+            )
         proc = await asyncio.create_subprocess_exec(
             *args,
             prompt,

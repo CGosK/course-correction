@@ -258,3 +258,13 @@ async def test_a_model_with_its_own_cwd_ignores_the_per_sample_one(recorder, tmp
 def test_skills_are_disabled_so_a_run_does_not_depend_on_this_machine():
     args = api()._build_args([ChatMessageUser(content="hi")], None, "s1", GenerateConfig())
     assert "--disable-slash-commands" in args
+
+
+@pytest.mark.asyncio
+async def test_the_cli_check_happens_on_use_not_on_construction(monkeypatch):
+    """A fresh clone failed 14 tests because the constructor looked for the CLI on PATH, even in
+    tests that never call it. The check belongs where the call is made."""
+    monkeypatch.setattr("course_correction.providers.claude_code.shutil.which", lambda _: None)
+    model = api()  # constructing is fine without Claude Code installed
+    with pytest.raises(ClaudeCodeError, match="not on PATH"):
+        await model._run(["claude"], "hi", Path("/tmp"))

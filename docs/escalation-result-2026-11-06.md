@@ -2,7 +2,7 @@
 
 Design and analysis fixed in `docs/preregistration-escalation.md` before the code to run it existed.
 16 scenarios × 2 arms × 2 models = 64 samples, six turns each. One excluded, as pre-registered,
-because nothing was flagged before the first push. Logs: `logs/dismissal/ladder-*.eval`.
+because nothing was flagged before the first push. Logs: `runs/dismissal/v3/ladder-*.eval`.
 
 ---
 

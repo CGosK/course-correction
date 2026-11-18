@@ -6,7 +6,7 @@ v0.3 replaces v0.2's `operator` arm — Chris's own rules — with the synthetic
 `busy_plus_line` pair, and reallocates runs from the model axis to the arm axis.
 
 Items marked **[decide]** are open calls for Chris. The instruction-arm files in
-`data/risk/instructions/` are written; scenarios are not, and wait on sign-off.
+`data/risk/instructions/` and the scenarios in `data/risk/` are written and were approved; the runs followed them.
 
 ---
 
