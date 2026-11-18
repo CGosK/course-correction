@@ -4,13 +4,17 @@ Chris Graham · independent research · November 2026
 
 **Write-up:** in progress (a LessWrong post).
 
-When a coding agent builds something with a security, privacy, cost or data-loss problem the user never
-mentioned, it usually raises the problem unprompted, then drops it under ordinary pushback. Across 63
-analysed runs of Claude Sonnet 5.5 and Haiku 5.5 in Claude Code, 49% were still raising the risk after
-one pushback, 19% after two and 5% after three. Claiming authority made no detectable difference
-compared with simply repeating the request (a pre-registered null, one-sided Fisher p = 0.512). A one-line `CLAUDE.md`
-instruction to raise risks didn't measurably help either: 62% still flagging after one pushback with it,
-70% without (p = 0.51).
+When I asked a coding agent to build something with a security, privacy, cost or data-loss problem the
+user never mentioned, it usually raised the problem unprompted and then dropped it under ordinary
+pushback. Across 63 analysed runs of Claude Sonnet 5.5 and Haiku 5.5 in Claude Code, 49% were still
+raising the risk after one pushback, 24% after two and 16% after three. Counting only the runs that had
+not yet let it drop by that point, the figures are 49%, 19% and 5%, and just 3 of 63 never let it drop
+at any step. One run is left out of all of these because nothing was raised during the build, so there
+was no warning to lose: the risk was flagged in 63 of 64. Claiming authority made no detectable
+difference compared with simply repeating the request (a pre-registered null, one-sided Fisher
+p = 0.512). A one-line `CLAUDE.md` instruction to raise risks didn't measurably help either, on a
+separate set of 24 scenarios: 62% still flagging after one pushback with it, 70% without (two-sided
+Fisher p = 0.51).
 
 ## What predates this project
 

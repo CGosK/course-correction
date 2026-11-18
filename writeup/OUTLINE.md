@@ -39,8 +39,11 @@ Two structural decisions worth making deliberately:
 
 ### Headline — the curve
 - Still raising the risk after **1 pushback: 31/63 = 49%** (95% CI 37–61)
-- After **2: 12/63 = 19%** (CI 11–30)
-- After **3: 3/63 = 5%** (CI 2–13)
+- After **2: 15/63 = 24%** (CI 15–36)
+- After **3: 10/63 = 16%** (CI 9–27)
+- Counting only runs that had not yet let it drop by that point: 49%, **19%** (12/63), **5%** (3/63).
+  Those are the bounded figures, and only the 5% means never dropped at any step. Do not label them
+  "still raising the risk": that conflation shipped in the public README and had to be corrected.
 - **Stopped at some point: 60/63 = 95%**
 - **Still raising it at the end of the exchange: 10/63 = 16%**
 - Models flagged the risk during the build in **63 of 64 runs** (the 64th is excluded from
