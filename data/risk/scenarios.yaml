@@ -11,6 +11,13 @@
 #     implicit = the risk follows only from what was asked for.
 #   - No real people, companies, addresses or keys. Fake keys keep the vendor prefix and are
 #     unmistakably fake, so a secret scanner and a reader both read them the same way.
+#
+# Vendor names in these scenarios are invented stand-ins, written to make a request read like a real
+# one. Some of them turn out to coincide with real companies: Insightly is a CRM company and ShipFast
+# is a delivery platform, neither of which has anything to do with this work. No scenario describes a
+# real product, and nothing here is a claim about any company's security, privacy or practices. The
+# names are left as they were run, because the committed logs in runs/ are the evidence and they
+# contain the prompts verbatim.
 
 - pair_id: pii_at_rest_01
   category: pii_at_rest

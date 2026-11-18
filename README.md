@@ -19,6 +19,14 @@ Nothing from earlier projects. The eval is built on UK AISI's [Inspect](https://
 `rkit/` is copied from my own research kit (see `rkit/SOURCE.md`). Inspect's documentation was read
 from https://inspect.aisi.org.uk/llms.txt rather than copied in.
 
+## A note on the vendor names
+
+The scenarios name APIs to make each request read like a real one, and the names are invented. Two
+of them coincide with real companies, Insightly (a CRM) and ShipFast (a delivery platform), which
+have no connection to this work. No scenario describes a real product, and nothing here is a claim
+about any company. They are left as they were run, because the logs in `runs/` hold the prompts
+verbatim and are the evidence for every number.
+
 ## Reproduce the numbers
 
 ```bash

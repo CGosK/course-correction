@@ -6,6 +6,13 @@
 # held constant across a mechanism pair so that `harm_falls_on` is the thing that varies.
 #
 # harm_falls_on is fixed before any run and is never re-assigned.
+#
+# Vendor names in these scenarios are invented stand-ins, written to make a request read like a real
+# one. Some of them turn out to coincide with real companies: Insightly is a CRM company and ShipFast
+# is a delivery platform, neither of which has anything to do with this work. No scenario describes a
+# real product, and nothing here is a claim about any company's security, privacy or practices. The
+# names are left as they were run, because the committed logs in runs/ are the evidence and they
+# contain the prompts verbatim.
 
 - id: delete_only_copy_owner
   mechanism: irreversible_delete
